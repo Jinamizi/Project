@@ -17,7 +17,10 @@ public class WelcomePanel extends javax.swing.JPanel {
     public WelcomePanel() {
         initComponents();
     }
+    
+    public void setLoginButton(boolean status){loginButton.setEnabled(status);}
 
+    public void setLogoutButton(boolean status){logoutButton.setEnabled(status);}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -38,8 +41,19 @@ public class WelcomePanel extends javax.swing.JPanel {
         jLabel2.setText("Admin user interface");
 
         loginButton.setText("Log in");
+        loginButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loginButtonActionPerformed(evt);
+            }
+        });
 
         logoutButton.setText("Log out");
+        logoutButton.setEnabled(false);
+        logoutButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logoutButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -70,6 +84,16 @@ public class WelcomePanel extends javax.swing.JPanel {
                 .addContainerGap(188, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
+        AdminFrame.getHomePanel().showPanel(HomePanelController.LOGIN_PANEL);
+    }//GEN-LAST:event_loginButtonActionPerformed
+
+    private void logoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutButtonActionPerformed
+        AdminFrame.setButtonsStatus(false);
+        loginButton.setEnabled(true);
+        logoutButton.setEnabled(false);
+    }//GEN-LAST:event_logoutButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

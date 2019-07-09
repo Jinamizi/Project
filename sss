@@ -1,0 +1,190 @@
+[1mdiff --git a/Admin side server/Admin Server/src/adminserver/Database.java b/Admin side server/Admin Server/src/adminserver/Database.java[m
+[1mindex 683e890..13b4494 100644[m
+[1m--- a/Admin side server/Admin Server/src/adminserver/Database.java[m	
+[1m+++ b/Admin side server/Admin Server/src/adminserver/Database.java[m	
+[36m@@ -71,7 +71,7 @@[m [mpublic class Database {[m
+     /**[m
+      * used to process admin username and password[m
+      */[m
+[31m-    static class Admin{ [m
+[32m+[m[32m    public static class Admin{[m[41m [m
+         /**[m
+          * check if admin exist in database[m
+          * @param username username of the administrator[m
+[36m@@ -96,7 +96,22 @@[m [mpublic class Database {[m
+     /**[m
+      * used to get and manipulate customer details in the database[m
+      */[m
+[31m-    private static class Customer{[m
+[32m+[m[32m    public static class Customer{[m[41m[m
+[32m+[m[41m        [m
+[32m+[m[32m        /**[m[41m[m
+[32m+[m[32m         * adds another account for a customer with given id number[m[41m[m
+[32m+[m[32m         * @param id_number the id number of the customer[m[41m[m
+[32m+[m[32m         * @param account_number the new account number to be added[m[41m[m
+[32m+[m[32m         * @return true if addition successful otherwise false[m[41m[m
+[32m+[m[32m         * @throws java.sql.SQLException[m[41m[m
+[32m+[m[32m         */[m[41m[m
+[32m+[m[32m        public static boolean addAccount(String id_number, String account_number) throws SQLException{[m[41m[m
+[32m+[m[32m            String query = "INSERT INTO accounts (id_number, account_number) VALUES('"+id_number+"'," + account_number+"')";[m[41m[m
+[32m+[m[32m            try(Statement statement = con.createStatement();SQLClosable finish = con::rollback){[m[41m[m
+[32m+[m[32m                return (statement.executeUpdate(query) > 0);[m[41m[m
+[32m+[m[32m            }[m[41m[m
+[32m+[m[32m        }[m[41m[m
+[32m+[m[41m        [m
+         /**[m
+          * add a new customer into the database[m
+          * @param id_number id number of the customer[m
+[36m@@ -107,7 +122,7 @@[m [mpublic class Database {[m
+          * @param fingerprint fingerprint of the customer[m
+          * @return return true if customer was added successfully otherwise return false[m
+          */[m
+[31m-        public static boolean addCustomer(String id_number,String firstName,String lastName, String password, String accountNumber, BufferedImage fingerprint){[m
+[32m+[m[32m        public static boolean addCustomer(String id_number,String firstName,String lastName, String password, String accountNumber, BufferedImage fingerprint) throws SQLException, IOException{[m[41m[m
+             //checkConnection();[m
+             try(Statement statement = con.createStatement();[m
+                     SQLClosable finish = con::rollback;){ //force rollback[m
+[36m@@ -133,10 +148,12 @@[m [mpublic class Database {[m
+                 [m
+             } catch (SQLException ex) {[m
+                 //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);[m
+[31m-                System.err.println("SQLException:-"+ex.getMessage());[m
+[32m+[m[32m                ex.printStackTrace();[m[41m[m
+[32m+[m[32m                throw ex;[m[41m[m
+             } catch (IOException ex) {[m
+                 //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);[m
+[31m-                System.err.println("IOException:-"+ex.getMessage());[m
+[32m+[m[32m                ex.printStackTrace();[m[41m[m
+[32m+[m[32m                throw ex;[m[41m[m
+             } finally{[m
+                 try {[m
+                     con.setAutoCommit(true);[m
+[36m@@ -145,7 +162,6 @@[m [mpublic class Database {[m
+                     System.err.println("SQLException:-"+ex.getMessage());[m
+                 }[m
+             }[m
+[31m-            return false;[m
+         }[m
+         [m
+         /**[m
+[36m@@ -180,21 +196,18 @@[m [mpublic class Database {[m
+         /**[m
+          * checks if a customer exists in a database.[m
+          * NB. Checks only customers who have set passwords[m
+[31m-         * @param id_number[m
+[31m-         * @param password[m
+[31m-         * @return [m
+[32m+[m[32m         * @param id_number the id number of the customer[m[41m[m
+[32m+[m[32m         * @param password the password of the customer[m[41m[m
+[32m+[m[32m         * @return true if the customer exists otherwise false[m[41m[m
+[32m+[m[32m         * @throws java.sql.SQLException[m[41m [m
+          */[m
+[31m-        public static boolean customerExist(String id_number, String password){[m
+[31m-            boolean found = false;[m
+[32m+[m[32m        public static boolean customerExist(String id_number, String password) throws SQLException{[m[41m[m
+             String query = "SELECT id_number FROM passwords WHERE id_number = '"+id_number+"' AND password = '"+password+"'";[m
+             [m
+             try (Statement statement = con.createStatement();[m
+                 ResultSet resultSet = statement.executeQuery(query)){[m
+[31m-                    found =  resultSet.next(); //true if data exist[m
+[31m-            } catch (SQLException ex) {[m
+[31m-                System.err.println("SQLException:-"+ex.getMessage());[m
+[31m-            }[m
+[31m-            return found;[m
+[32m+[m[32m                    return  resultSet.next(); //true if data exist[m[41m[m
+[32m+[m[32m            }[m[41m [m
+         }[m
+         [m
+         /**[m
+[36m@@ -202,7 +215,7 @@[m [mpublic class Database {[m
+         * @param print print to check if it exist[m
+         * @return true if print exist otherwise false[m
+         */[m
+[31m-        public static boolean fingerprintExist(BufferedImage print){[m
+[32m+[m[32m        public static String fingerprintExist(BufferedImage print) throws SQLException, IOException{[m[41m[m
+             try {[m
+                 String[] printLocations = getFingerprintLocations();[m
+                 System.out.println("Locations: "+printLocations);[m
+[36m@@ -216,17 +229,35 @@[m [mpublic class Database {[m
+                     double value = matcher.match(matching);[m
+                     System.out.println("Value returned: "+value);[m
+                     if (value < 40 )[m
+[31m-                        return true;[m
+[32m+[m[32m                        return getID(location);[m[41m[m
+                 }[m
+[32m+[m[32m                return "";[m[41m[m
+             } catch (SQLException ex) {[m
+                 //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);[m
+[31m-                System.err.println("SQLException:-"+ex.getMessage());[m
+[32m+[m[32m                ex.printStackTrace();[m[41m[m
+[32m+[m[32m                throw ex;[m[41m[m
+             } catch (IOException ex) {[m
+                 //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);[m
+[31m-                System.err.println("IOException:-"+ex.getMessage());[m
+[32m+[m[32m                ex.printStackTrace();[m[41m[m
+[32m+[m[32m                throw ex;[m[41m[m
+             }[m
+             [m
+[31m-            return false;[m
+[32m+[m[41m            [m
+[32m+[m[32m        }[m[41m[m
+[32m+[m[41m        [m
+[32m+[m[32m        /**[m[41m[m
+[32m+[m[32m         * locates the id number for the finger print stored in the given location[m[41m[m
+[32m+[m[32m         * @param location the location of the print[m[41m[m
+[32m+[m[32m         * @return the id_number of the fingerprint[m[41m[m
+[32m+[m[32m         * @throws SQLException[m[41m [m
+[32m+[m[32m         */[m[41m[m
+[32m+[m[32m        public static String getID(String location) throws SQLException{[m[41m[m
+[32m+[m[32m            String query = "SELECT id_number FROM fingerprints WHERE print = '" +location+"'";[m[41m[m
+[32m+[m[32m            try(Statement statement = con.createStatement(); ResultSet resultSet = statement.executeQuery(query)){[m[41m[m
+[32m+[m[32m                if(resultSet.next())[m[41m[m
+[32m+[m[32m                    return resultSet.getString(1);[m[41m[m
+[32m+[m[32m            }[m[41m[m
+[32m+[m[32m            return "";[m[41m[m
+         }[m
+         [m
+         /**[m
+[36m@@ -245,6 +276,22 @@[m [mpublic class Database {[m
+             return new byte[0];   [m
+         }[m
+         [m
+[32m+[m[32m        /**[m[41m[m
+[32m+[m[32m         * checks if the given account number exist in the database[m[41m[m
+[32m+[m[32m         * @param account the account number to check[m[41m[m
+[32m+[m[32m         * @return returns true if the account number is in the database otherwise false[m[41m[m
+[32m+[m[32m         * @throws Exception[m[41m [m
+[32m+[m[32m         */[m[41m[m
+[32m+[m[32m        public static boolean accountExist(String account) throws Exception{[m[41m[m
+[32m+[m[32m            String query = "Select account_number FROM accounts WHERE account_number = '"+account+"'";[m[41m[m
+[32m+[m[32m            try(Statement statement = con.createStatement();[m[41m[m
+[32m+[m[32m                    ResultSet resultSet = statement.executeQuery(query)){[m[41m[m
+[32m+[m[32m                return resultSet.next();[m[41m[m
+[32m+[m[32m            } catch (SQLException ex) {[m[41m[m
+[32m+[m[32m                //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);[m[41m[m
+[32m+[m[32m                throw ex;[m[41m[m
+[32m+[m[32m            }[m[41m[m
+[32m+[m[32m        }[m[41m[m
+         [m
+         /**[m
+         * get all the print locations stored in the database[m
+[36m@@ -276,10 +323,15 @@[m [mpublic class Database {[m
+         //BufferedImage image = ImageIO.read(new File("C:\\tonny\\fingerprint idea\\samples\\fingerprint.png"));[m
+         //System.out.println(Database.customer.addCustomer(id_number, firstname, lastname, password, acccountnumber, image));[m
+         //System.out.println(Database.customer.customerExist("333", "123"));[m
+[31m-        File file = new File("print.jpg");[m
+[31m-        System.out.println("Probe; - "+file.getPath());[m
+[31m-        BufferedImage bufferedImage = ImageIO.read(file);[m
+[31m-        System.out.println(Database.customer.fingerprintExist(bufferedImage));[m
+[32m+[m[32m        //File file = new File("print.jpg");[m[41m[m
+[32m+[m[32m        //System.out.println("Probe; - "+file.getPath());[m[41m[m
+[32m+[m[32m        //BufferedImage bufferedImage = ImageIO.read(file);[m[41m[m
+[32m+[m[32m        //System.out.println(Database.customer.fingerprintExist(bufferedImage));[m[41m[m
+[32m+[m[32m        try{[m[41m[m
+[32m+[m[32m            System.out.println(Database.customer.getID("print.jpg"));[m[41m[m
+[32m+[m[32m        } catch(Exception e){[m[41m[m
+[32m+[m[32m            e.printStackTrace();[m[41m[m
+[32m+[m[32m        }[m[41m[m
+     }[m
+     [m
+     [m

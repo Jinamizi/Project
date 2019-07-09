@@ -19,7 +19,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="submitButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="loginButton" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                       <Component id="jLabel1" min="-2" pref="121" max="-2" attributes="0"/>
                       <Group type="102" attributes="0">
@@ -54,7 +54,7 @@
                   <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="submitButton" min="-2" max="-2" attributes="0"/>
+              <Component id="loginButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="42" max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -80,10 +80,14 @@
     </Component>
     <Component class="javax.swing.JPasswordField" name="passwordField">
     </Component>
-    <Component class="javax.swing.JButton" name="submitButton">
+    <Component class="javax.swing.JButton" name="loginButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Submit"/>
+        <Property name="text" type="java.lang.String" value="Log in"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loginButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

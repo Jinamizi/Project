@@ -66,11 +66,18 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Log in"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loginButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="logoutButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Log out"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logoutButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

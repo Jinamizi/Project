@@ -5,17 +5,29 @@
  */
 package ui;
 
+import java.awt.Cursor;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+
 /**
  *
  * @author DEGUZMAN
  */
 public class LoginPanel extends javax.swing.JPanel {
-
+    DocumentListener listener = new MyDocumentListener();
     /**
      * Creates new form LoginPanel
      */
     public LoginPanel() {
         initComponents();
+        usernameField.getDocument().addDocumentListener(listener);
+        passwordField.getDocument().addDocumentListener(listener);
     }
 
     /**
@@ -32,7 +44,7 @@ public class LoginPanel extends javax.swing.JPanel {
         usernameField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
-        submitButton = new javax.swing.JButton();
+        loginButton = new javax.swing.JButton();
 
         jLabel1.setText("Login");
 
@@ -40,7 +52,13 @@ public class LoginPanel extends javax.swing.JPanel {
 
         jLabel3.setText("Password:");
 
-        submitButton.setText("Submit");
+        loginButton.setText("Log in");
+        loginButton.setEnabled(false);
+        loginButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loginButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -49,7 +67,7 @@ public class LoginPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(submitButton)
+                    .addComponent(loginButton)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(layout.createSequentialGroup()
@@ -76,18 +94,76 @@ public class LoginPanel extends javax.swing.JPanel {
                     .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(submitButton)
+                .addComponent(loginButton)
                 .addContainerGap(42, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
+        
+        new Thread(this::verifyAdmin).start();
+    }//GEN-LAST:event_loginButtonActionPerformed
+
+    public void verifyAdmin() {
+        String username = usernameField.getText();
+        String password = String.valueOf(passwordField.getPassword());
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        loginButton.setEnabled(false);
+        try {
+            String response = Connector.verifyAdmin(username, password);
+            if (response.equalsIgnoreCase("EXIST")) {
+                AdminFrame.getHomePanel().getWelcomePanel().setLoginButton(false);
+                AdminFrame.getHomePanel().getWelcomePanel().setLogoutButton(true);
+                AdminFrame.getHomePanel().showPanel(HomePanelController.WELCOME_PANEL);
+                AdminFrame.setButtonsStatus(true);
+            } else if (response.equalsIgnoreCase("NOT FOUND")) {
+                JOptionPane.showMessageDialog(this, "Not Authorised", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, response, "Info", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (IOException ex) {
+            //Logger.getLogger(LoginPanel.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        setCursor(null);
+        loginButton.setEnabled(true);
+    }
+
+    public static void main(String[] arf) {
+        JFrame frame = new JFrame("Loging in");
+        frame.add(new LoginPanel());
+
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JButton loginButton;
     private javax.swing.JPasswordField passwordField;
-    private javax.swing.JButton submitButton;
     private javax.swing.JTextField usernameField;
     // End of variables declaration//GEN-END:variables
+
+    class MyDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            loginButton.setEnabled(!usernameField.getText().equals("") && passwordField.getPassword().length > 0);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            loginButton.setEnabled(!usernameField.getText().equals("") && passwordField.getPassword().length > 0);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            loginButton.setEnabled(!usernameField.getText().equals("") && passwordField.getPassword().length > 0);
+        }
+
+    }
 }

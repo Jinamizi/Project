@@ -1,11 +1,11 @@
 package adminserver;
 
+//put the sendstring method on the try blocks
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.*;
 import java.util.Random;
 import java.util.logging.Level;
@@ -20,7 +20,11 @@ import javax.imageio.ImageIO;
  */
 public class SocketHandler implements Runnable {
 
-    private Socket socket;
+    Socket socket;
+    InputStream in;
+    OutputStream out;
+    ObjectInputStream inputStream; 
+    ObjectOutputStream outputStream;
 
     /**
      * initializes the SocketHandler
@@ -29,6 +33,18 @@ public class SocketHandler implements Runnable {
      */
     public SocketHandler(Socket socket) {
         this.socket = socket;
+        setStreams();
+    }
+
+    private void setStreams() {
+        try {
+            in = socket.getInputStream();
+            out = socket.getOutputStream();
+            inputStream = new ObjectInputStream(in);
+            outputStream = new ObjectOutputStream(out);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -36,8 +52,9 @@ public class SocketHandler implements Runnable {
      */
     @Override
     public void run() {
-        try (ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream())) {
-            String request = inputStream.readObject().toString();
+        try (IOClosable closer = socket::close) {
+            String request = inputStream.readUTF();
+            System.out.println("Request received: "+request);
             switch (request.toLowerCase()) {
                 case "verify admin":
                     readAndVerifyAdmin();
@@ -57,29 +74,50 @@ public class SocketHandler implements Runnable {
                 case "add account":
                     readAndAddAccount();
                     break;
+                case "get id":
+                    readPrintAndReturnId();
+                    break;
                 default: //do nothing
             }
         } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        } catch (ClassNotFoundException ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
 
     /**
+     * reads a print from the socket and sends back the id number of the print stored in the database
+     */
+    private void readPrintAndReturnId(){
+        String result;
+        try {
+            BufferedImage image = readImage();
+            result = getIDForPrint(image);
+        } catch (Exception ex) {
+            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            result = ex.getMessage();
+            ex.printStackTrace();
+        }
+        try {
+            sendString(result);
+        } catch (IOException ex) {
+            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        }
+    }
+    
+    private String getIDForPrint(BufferedImage image) {
+        return Database.Customer.getID(image);
+    }
+    
+    /**
      * used to add account for a given id number
      */
     private void readAndAddAccount() {
         String result;
         try {
-            Map<String, String> customerDetails = readCustomer();
-            if (addAccount(customerDetails.get("id_number"), customerDetails.get("Account_number"))) {
-                result = "SUCCESSFUL";
-            } else {
-                result = "UNSUCCESSFUL";
-            }
+            Map<String, String> customerDetails = (Map<String, String>) inputStream.readObject();
+            result = (addAccount(customerDetails.get("id_number"), customerDetails.get("account_number"))) ? "SUCCESSFUL" : "UNSUCCESSFUL";
         } catch (Exception ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -107,7 +145,7 @@ public class SocketHandler implements Runnable {
 
     /**
      * reads a fingerprint image from the socket and check if it exist in the
-     * database. sends the id number of the fingerprint accross the socket
+     * database. sends the id number of the fingerprint across the socket
      */
     private void readAndCheckIfPrintExist() {
         String result;
@@ -128,6 +166,15 @@ public class SocketHandler implements Runnable {
     }
 
     /**
+     * closes the socket passed to the handler
+     *
+     * @throws IOException if an error occurred during closing
+     */
+    private void closeSocket() throws IOException {
+        socket.close();
+    }
+
+    /**
      * checks if the fingerprint exist in the database
      *
      * @param image the fingerprint to check if it exists
@@ -136,7 +183,7 @@ public class SocketHandler implements Runnable {
      * @throws SQLException
      * @throws IOException
      */
-    private String printExist(BufferedImage image) throws SQLException, IOException {
+    private String printExist(BufferedImage image) {
         return Database.Customer.fingerprintExist(image);
     }
 
@@ -147,12 +194,8 @@ public class SocketHandler implements Runnable {
     private void readAndVerifyCustomer() {
         String result;
         try {
-            Map<String, String> map = readCustomer();
-            if (verifyCustomer(map.getOrDefault("id_number", null), map.getOrDefault("password", null))) {
-                result = "EXIST";
-            } else {
-                result = "NOT FOUND";
-            }
+            Map<String, String> map = (Map<String, String>) inputStream.readObject();
+            result = (verifyCustomer(map.get("id_number"), map.get("password"))) ? "EXIST" : "NOT FOUND"; 
         } catch (Exception ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -164,23 +207,6 @@ public class SocketHandler implements Runnable {
         } catch (IOException ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
-        }
-    }
-
-    /**
-     * reads customer details from the socket
-     *
-     * @return customer details
-     * @throws IOException
-     * @throws Exception
-     */
-    private Map<String, String> readCustomer() throws IOException, Exception {
-        Map<String, String> customerCredentials = new HashMap<>();
-        try (ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream())) {
-            return (Map<String, String>) inputStream.readObject();
-        } catch (ClassNotFoundException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            throw new Exception("Could not read data");
         }
     }
 
@@ -203,14 +229,9 @@ public class SocketHandler implements Runnable {
     private void readAndAddCustomer() {
         String result;
         try {
-            Map<String, String> map = readCustomer();
+            Map<String, String> map = (Map<String, String>) inputStream.readObject();
             BufferedImage image = readImage();
-            if (addCustomer(map, image)) //if addition of customer was successful
-            {
-                result = "SUCCESS";
-            } else {
-                result = "UNSUCCESSFUL";
-            }
+            result = (addCustomer(map, image)) ? "SUCCESS" : "UNSUCCESSFULL";
         } catch (Exception ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -246,8 +267,6 @@ public class SocketHandler implements Runnable {
      * @throws IOException
      */
     private BufferedImage readImage() throws IOException {
-        try (InputStream inputStream = socket.getInputStream()) {
-
             byte[] sizeAr = new byte[4];
             inputStream.read(sizeAr);
             int size = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
@@ -256,30 +275,6 @@ public class SocketHandler implements Runnable {
             inputStream.read(imageAr);
 
             return ImageIO.read(new ByteArrayInputStream(imageAr));
-        }
-    }
-
-    {
-        /**
-         * reads the customer details from the socket
-         *
-         * @return returns the customer details in Map form
-         * @throws IOException throws IOException if an error occurred during
-         * reading
-         */
-        /*private Map<String, String> readCustomer() throws IOException, Exception{
-         //ArrayList<String> customerData = new ArrayList<>(1);
-         Map<String,String> customerData = new HashMap<>();
-         try(ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream())){
-         customerData = (Map<String, String>) inputStream.readObject();
-         return customerData;
-         } catch (ClassNotFoundException ex) {
-         //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-         ex.printStackTrace();
-         throw new Exception("Could not read data");
-         }
-
-         }*/
     }
 
     /**
@@ -325,14 +320,16 @@ public class SocketHandler implements Runnable {
         boolean verified = false;
         String result;
         try {
-            String[] adminDetails = readAdmin();
-            verified = verifyAdmin(adminDetails[0], adminDetails[1]);
-            if (verified) {
-                result = "EXIST";
-            } else {
-                result = "NOT FOUND";
-            }
+            //Map<String, String> adminDetails = readAdmin();
+            Map<String, String> adminDetails = (Map<String, String>) inputStream.readObject();
+            verified = verifyAdmin(adminDetails.get("username"), adminDetails.get("password"));
+            result = (verified) ? "EXIST" : "NOT FOUND";
+
         } catch (IOException ex) {
+            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            result = ex.getMessage();
+            ex.printStackTrace();
+        } catch (ClassNotFoundException ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             result = ex.getMessage();
             ex.printStackTrace();
@@ -346,34 +343,16 @@ public class SocketHandler implements Runnable {
     }
 
     /**
-     * use to send a string across the socket
+     * used to send a string across the socket
      *
      * @param value the string to send
      * @throws IOException throws an exception if an error occurs during sending
      */
     private void sendString(String value) throws IOException {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream())) {
-            outputStream.writeObject(value);
-        }
+        outputStream.writeUTF(value);
+        outputStream.flush();
     }
 
-    /**
-     * reads admin data from the socket.
-     *
-     * @return returns admin data in form of an array
-     * @throws IOException
-     */
-    private String[] readAdmin() throws IOException {
-        ArrayList<String> adminData = new ArrayList<>(1);
-        try (ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream())) {
-            adminData.add(inputStream.readObject().toString()); //read user name
-            adminData.add(inputStream.readObject().toString()); //read password
-        } catch (ClassNotFoundException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        }
-        return adminData.toArray(new String[adminData.size()]);
-    }
 
     /**
      * check if the admin with the given credentials exist in the database

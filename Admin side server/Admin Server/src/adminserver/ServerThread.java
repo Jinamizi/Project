@@ -2,8 +2,6 @@ package adminserver;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Used to run the ServerSocket
@@ -26,14 +24,20 @@ public class ServerThread extends Thread {
         }
         port = serverSocket;
     }
-
+    
+    public ServerSocket getPort(){
+        return port;
+    }
+    
     /**
      * wait for connections and pass them to the {@link SocketHandler}
      */
     @Override
     public void run() {
         while (!port.isClosed()) { //while port is not closed
-            try (Socket socket = port.accept()) { //wait for connections
+            try { //wait for connections
+                Socket socket = port.accept();
+                System.out.println("Received: "+ socket);
                 new Thread(new SocketHandler(socket)).start(); //process the socket in another thread. use SocketHandler object or this
             } catch (IOException ex) {
                 //Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);

@@ -13,14 +13,49 @@ import javax.swing.*;
  * @author DEGUZMAN
  */
 public class AdminFrame extends javax.swing.JFrame {
-    CardLayout card = new CardLayout();
+    static CardLayout card = new CardLayout();
+    static String HOME_PANEL = "home_panel";
+    static String ADD_PANEL = "add_panel";
+    static String SEARCH_PANEL = "search_panel";
+    private static HomePanelController homePanel = new HomePanelController();
+    private static AddPanelController addPanel = new AddPanelController();
+    private static SearchPanelController searchPanel = new SearchPanelController();
+    
     /**
      * Creates new form AdminFrame
      */
     public AdminFrame() {
         initComponents();
-        HomePanelController homePanel = new HomePanelController();
-        card.addLayoutComponent(homePanel, "home_panel");
+        card.addLayoutComponent(homePanel, HOME_PANEL);
+        card.addLayoutComponent(addPanel, ADD_PANEL);
+        card.addLayoutComponent(searchPanel, SEARCH_PANEL);
+        //card.show(homePanel, HOME_PANEL);
+        
+        mainPanel.setLayout(card);
+        mainPanel.add(homePanel);
+        mainPanel.add(addPanel);
+        mainPanel.add(searchPanel);
+        
+    }
+
+    public static HomePanelController getHomePanel() {
+        return homePanel;
+    }
+
+    public static AddPanelController getAddPanel() {
+        return addPanel;
+    }
+
+    public static SearchPanelController getSearchPanel() {
+        return searchPanel;
+    }
+    
+    public static void showPanel(String panelName) {
+        card.show(mainPanel, panelName);
+    }
+    public static void setButtonsStatus(boolean status){
+        addButton.setEnabled(status);
+        searchButton.setEnabled(status);
     }
 
     /**
@@ -33,10 +68,9 @@ public class AdminFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        homeButton = new javax.swing.JButton();
+        addButton = new javax.swing.JButton();
+        searchButton = new javax.swing.JButton();
         mainPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         helpMenu = new javax.swing.JMenu();
@@ -45,38 +79,58 @@ public class AdminFrame extends javax.swing.JFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(250, 250, 250)));
 
-        jButton1.setText("Home");
+        homeButton.setText("Home");
+        homeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                homeButtonActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Home");
+        addButton.setText("Add");
+        addButton.setEnabled(false);
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
 
-        jButton3.setText("Home");
-
-        jButton4.setText("Home");
+        searchButton.setText("Search");
+        searchButton.setEnabled(false);
+        searchButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-            .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+            .addComponent(homeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(addButton, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+            .addComponent(searchButton, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(homeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(searchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 106, Short.MAX_VALUE))
         );
 
-        mainPanel.setBackground(new java.awt.Color(153, 153, 255));
+        mainPanel.setBackground(new java.awt.Color(255, 255, 255));
         mainPanel.setLayout(new java.awt.CardLayout());
+        //java.awt.CardLayout CardLayout card = new java.awt.CardLayout();
+        //HomePanelController homePanel = new HomePanelController();
+        //AddPanelController addPanel = new AddPanelController();
+        //SearchPanelController searchPanel = new SearchPanelController();
+        //card.add(homePanel, "home_panel");
+        //card.add(addPanel, "add_panel");
+        //card.add(searchPanel, "search_panel");
+        //mainPanel.setLayout(card);
 
         helpMenu.setText("Help");
         jMenuBar1.add(helpMenu);
@@ -90,7 +144,7 @@ public class AdminFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -100,6 +154,18 @@ public class AdminFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_homeButtonActionPerformed
+        showPanel(HOME_PANEL);
+    }//GEN-LAST:event_homeButtonActionPerformed
+
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        showPanel(ADD_PANEL);
+    }//GEN-LAST:event_addButtonActionPerformed
+
+    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+        showPanel(SEARCH_PANEL);
+    }//GEN-LAST:event_searchButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -137,13 +203,12 @@ public class AdminFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private static javax.swing.JButton addButton;
     private javax.swing.JMenu helpMenu;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
+    private static javax.swing.JButton homeButton;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel mainPanel;
+    private static javax.swing.JPanel mainPanel;
+    private static javax.swing.JButton searchButton;
     // End of variables declaration//GEN-END:variables
 }
