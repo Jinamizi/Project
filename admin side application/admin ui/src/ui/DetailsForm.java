@@ -5,17 +5,36 @@
  */
 package ui;
 
+import java.awt.Cursor;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.*;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 /**
  *
  * @author DEGUZMAN
  */
 public class DetailsForm extends javax.swing.JPanel {
 
+    DocumentListener listener = new MyDocumentListener();
     /**
      * Creates new form DetailsForm
      */
     public DetailsForm() {
         initComponents();
+        firstNameField.getDocument().addDocumentListener(listener);
+        lastNameField.getDocument().addDocumentListener(listener);
+        idField.getDocument().addDocumentListener(listener);
+        passwordField.getDocument().addDocumentListener(listener);
+        confirmPasswordField.getDocument().addDocumentListener(listener);
     }
 
     /**
@@ -61,12 +80,29 @@ public class DetailsForm extends javax.swing.JPanel {
         jLabel6.setText("Confirm");
 
         generateAccountButton.setText("Generate account number.");
+        generateAccountButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateAccountButtonActionPerformed(evt);
+            }
+        });
 
-        accountLabel.setText("   ");
+        accountLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        accountLabel.setText("_");
 
         okButton.setText("Ok");
+        okButton.setEnabled(false);
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
+            }
+        });
 
         exitButton.setText("Exit");
+        exitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -142,7 +178,109 @@ public class DetailsForm extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+        AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+    }//GEN-LAST:event_exitButtonActionPerformed
 
+    private void generateAccountButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateAccountButtonActionPerformed
+        new Thread(this::getAndSetAccount).start();
+    }//GEN-LAST:event_generateAccountButtonActionPerformed
+
+    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+       if ( !Arrays.equals( passwordField.getPassword(), confirmPasswordField.getPassword()) ){
+            JOptionPane.showMessageDialog(this, "Confirmed password should be equal to the password", "Info", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+       
+       if (confirmDetails()) addCustomer( getDetails(), null);
+    }//GEN-LAST:event_okButtonActionPerformed
+
+    public Map<String, String> getDetails(){
+        Map<String, String> details = new HashMap<>();
+        details.put("first_name",firstNameField.getText());
+        details.put("last_name",lastNameField.getText());
+        details.put("id_number",idField.getText());
+        details.put("account_number",accountLabel.getText());
+        details.put("password",String.valueOf( passwordField.getPassword() ));
+        return details;
+    }
+    
+    public boolean confirmDetails(){
+        String fName = firstNameField.getText();
+        String lName = lastNameField.getText();
+        String id = idField.getText();
+        String account = accountLabel.getText();
+        String password = String.valueOf( passwordField.getPassword() );
+        
+        String message = "First name: " + fName + "\n";
+        message += "Last name: " + lName + "\n";
+        message += "ID number: " + id + "\n";
+        message += "Account: " + account + "\n";
+        
+        int choice = JOptionPane.showConfirmDialog(this, message, "Confirm", JOptionPane.OK_CANCEL_OPTION);
+        return (choice == JOptionPane.OK_OPTION);
+    }
+    
+    public void addCustomer(Map<String, String> details, BufferedImage image) {
+        String [] responseT = {"SUCCESS", "UNSUCCESSFULL", "Some error occured"};
+        Random random = new Random();
+        String response = responseT[random.nextInt(3)];
+        setCursor(null);
+        
+            if (response.equalsIgnoreCase("SUCCESS")){
+                JOptionPane.showMessageDialog(this, "Successfully added");
+                AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+            }
+            else if (response.equalsIgnoreCase("UNSUCCESSFULL")){
+                int choice = JOptionPane.showConfirmDialog(this, "Customer not added\nTry again?", "Info", JOptionPane.YES_NO_OPTION);
+                if (choice == JOptionPane.YES_OPTION)
+                    addCustomer(details, image);
+            }
+            else
+                JOptionPane.showMessageDialog(this, response, "Error", JOptionPane.INFORMATION_MESSAGE);
+            
+    }
+    
+    public void setOkButton(){
+            boolean status = !"_".equals(accountLabel.getText()) && confirmPasswordField.getPassword().length > 0 && !"".equals(firstNameField.getText()) &&
+                    !"".equals(idField.getText()) && !"".equals(lastNameField.getText()) && passwordField.getPassword().length > 0;
+            okButton.setEnabled(status);
+            
+        }
+    
+    public void getAndSetAccount() {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        generateAccountButton.setEnabled(false);
+        try {
+            String account = Connector.generateAccountNumber();
+            SwingUtilities.invokeLater(() -> {accountLabel.setText(account);setOkButton();});
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Info", JOptionPane.ERROR_MESSAGE);
+        }
+        setCursor(null);
+        generateAccountButton.setEnabled(true);
+    }
+    
+    class MyDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            setOkButton();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            setOkButton();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            setOkButton();
+        }
+        
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel accountLabel;
     private javax.swing.JPasswordField confirmPasswordField;
@@ -160,4 +298,12 @@ public class DetailsForm extends javax.swing.JPanel {
     private javax.swing.JButton okButton;
     private javax.swing.JPasswordField passwordField;
     // End of variables declaration//GEN-END:variables
+
+    public static void main(String[] args){
+        JFrame frame = new JFrame("Details form");
+        frame.add(new DetailsForm());
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
 }

@@ -107,7 +107,7 @@ public class Connector {
     public static String checkIfPrintExist(BufferedImage image) throws IOException {
         String response;
         System.out.println("Check if print exist");
-        try (Socket socket = new Socket("127.0.0.1", PORT);
+        try (Socket socket = new Socket("127.0.0.1", 13085);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 

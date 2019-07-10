@@ -3,22 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package adminserver;
+package clientserver;
 
 import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -62,7 +59,7 @@ public class ServerApp extends javax.swing.JFrame {
         aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Admin Server");
+        setTitle("Customer Server");
         addWindowStateListener(new java.awt.event.WindowStateListener() {
             public void windowStateChanged(java.awt.event.WindowEvent evt) {
                 formWindowStateChanged(evt);
@@ -271,7 +268,7 @@ public class ServerApp extends javax.swing.JFrame {
      * @param message the message to be logged
      */
     private void log(Level level, String message){
-        ServerInfoLog.log(Level.INFO, "Server started " + Server.isRunning());
+        //ServerInfoLog.log(Level.INFO, "Server started " + Server.isRunning());
     }
 
     /**
@@ -299,6 +296,7 @@ public class ServerApp extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ServerApp.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
@@ -349,5 +347,5 @@ class WindowChecker extends WindowAdapter {
             JOptionPane.showMessageDialog(null, "Server could not stop running", "Error", JOptionPane.ERROR);
         }
     }
-}
+    }
 }

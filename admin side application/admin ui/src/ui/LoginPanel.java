@@ -100,8 +100,7 @@ public class LoginPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        
-        new Thread(this::verifyAdmin).start();
+       new Thread(this::verifyAdmin).start();
     }//GEN-LAST:event_loginButtonActionPerformed
 
     public void verifyAdmin() {

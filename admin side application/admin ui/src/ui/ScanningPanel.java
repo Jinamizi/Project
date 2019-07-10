@@ -91,7 +91,7 @@ public class ScanningPanel extends java.awt.Panel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
-        // TODO add your handling code here:
+        AdminFrame.getAddPanel().showPanel(AddPanelController.DETAILS_PANEL);
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void fingerprintLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fingerprintLabelMouseClicked
