@@ -58,6 +58,10 @@ public class Database {
         return connectionExist();
     }
 
+    /**
+     * Checks if a connection to the database exist
+     * @return true if there is a connection otherwise false
+     */
     public static boolean connectionExist() {
         boolean exist = false;
         try {
@@ -90,6 +94,7 @@ public class Database {
         return found;
     }
 
+    //id not needed here
     /**
      * used to get the balance for a customer
      *
@@ -108,6 +113,7 @@ public class Database {
         }
     }
 
+    
     /**
      * used to fetch all the accounts of a given customer
      *
@@ -138,6 +144,11 @@ public class Database {
         return getID(location);
     }
 
+    /**
+     * used to get the id of the print stored at a given location
+     * @param printLocation the location of the print
+     * @return the id of the print
+     */
     private static String getID(String printLocation) {
         String query = "SELECT id_number FROM fingerprints WHERE print = '" + printLocation + "'";
         try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(query)) {
@@ -150,6 +161,12 @@ public class Database {
         return "";
     }
 
+    /**
+     * used to get the balances of all the accounts registered on a given id number
+     * @param idNumber the id number of the customer
+     * @return the accounts and their balances
+     * @throws Exception 
+     */
     public static Map<String, String> getAccountBalances(String idNumber) throws Exception {
         String query = "SELECT account_number, balance FROM accounts WHERE id_number = '" + idNumber + "'";
         ArrayList<String> accountNumbers = new ArrayList<>(1);
@@ -188,7 +205,14 @@ public class Database {
         return locations.toArray(new String[locations.size()]);
     }
 
-    public static String withdraw(String idNumber, String account, float amount) {
+    /**
+     * Deducts the amount of money from the account
+     * @param idNumber the id number of the customer
+     * @param account the account number of the customer
+     * @param amount the amount to withdraw
+     * @return response which can be either SUCCESS, UNSUCCESSFULL or error messages
+     */
+    public static String withdraw(String idNumber, String account, double amount) {
         double balance = 0.0;
         String response = "";
         String query = "update accounts set balance = balance - '" + amount + "' where id_number = '" + idNumber + "' and account_number = '" + account + "'";
@@ -202,6 +226,13 @@ public class Database {
         return response;
     }
 
+    /**
+     * deposits money to the given account of a id number
+     * @param idNumber the id number of the customer
+     * @param account the account number of the customer
+     * @param amount the amount to deposit
+     * @return either SUCCESS, UNSUCCESSFUL or the error encountered
+     */
     public static String deposit(String idNumber, String account, float amount) {
         double balance = 0.0;
         String response = "";
@@ -226,7 +257,3 @@ public class Database {
     }
 }
 
-interface SQLClosable extends AutoCloseable {
-
-    public void close() throws SQLException;
-}

@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public class Server {
      private static ServerSocket serverSocket;
-    public static final int PORT_NUMBER = 8888;
+    public static final int PORT_NUMBER = 8889;
     private static ServerThread serverThread;
     //private ServerInfoLog serverLog = new ServerInfoLog();
     

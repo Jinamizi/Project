@@ -12,8 +12,8 @@ import java.awt.CardLayout;
  * @author DEGUZMAN
  */
 public final class CustomerFrame extends javax.swing.JFrame {
-    private String customerId;
-    CardLayout card = new CardLayout();
+    private static String customerId;
+    private static CardLayout card = new CardLayout();
     private WelcomePanel welcomePanel = new WelcomePanel(this);
     private ScanningPanel scanningPanel = new ScanningPanel(this);
     private ActionPanel actionPanel = new ActionPanel(this);
@@ -28,24 +28,24 @@ public final class CustomerFrame extends javax.swing.JFrame {
         card.addLayoutComponent(scanningPanel, SCANNING_PANEL);
         card.addLayoutComponent(actionPanel, ACTION_PANEL);
         
-        setLayout(card);
-        add(welcomePanel);
-        add(scanningPanel);
-        add(actionPanel);
+        mainPanel.setLayout(card);
+        mainPanel.add(welcomePanel);
+        mainPanel.add(scanningPanel);
+        mainPanel.add(actionPanel);
         
         addMouseListener(new TimeThread(()->showPanel(WELCOME_PANEL)));
     }
 
-    public  String getCustomerId() {
+    public  static String getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(String Id) {
+    public static void setCustomerId(String Id) {
         customerId = Id;
     }
 
-    public void showPanel(String panelName) {
-        card.show(this, panelName);
+    public static void showPanel(String panelName) {
+        card.show(mainPanel, panelName);
     }
     
     /**
@@ -57,17 +57,40 @@ public final class CustomerFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        mainPanel = new java.awt.Panel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGap(0, 306, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, Short.MAX_VALUE)))
         );
 
         pack();
@@ -109,5 +132,6 @@ public final class CustomerFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private static java.awt.Panel mainPanel;
     // End of variables declaration//GEN-END:variables
 }

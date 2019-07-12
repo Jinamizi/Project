@@ -84,6 +84,22 @@ public class SocketHandler implements Runnable {
             ex.printStackTrace();
         }
     }
+    
+    private void getAccounts() {
+        try {
+            String id = inputStream.readUTF();
+            String[] accounts;
+            try {
+                accounts = Database.Customer.getAccounts(id);
+                outputStream.writeObject(accounts);
+            } catch (SQLException ex) {
+                outputStream.writeObject(ex.getMessage());
+            }
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 
     /**
      * reads a print from the socket and sends back the id number of the print stored in the database
@@ -95,7 +111,7 @@ public class SocketHandler implements Runnable {
             result = getIDForPrint(image);
         } catch (Exception ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            result = ex.getMessage();
+            result = "ERROR" + ex.getMessage();
             ex.printStackTrace();
         }
         try {

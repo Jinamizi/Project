@@ -137,6 +137,19 @@ public class Database {
             }
         }
 
+        public static String[] getAccounts(String id_number) throws SQLException {
+        String query = "SELECT account_number FROM accounts WHERE id_number = '" + id_number + "'";
+        ArrayList<String> accountNumbers = new ArrayList<>(1);
+
+        try (Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query)) {
+            while (resultSet.next()) {
+                accountNumbers.add(resultSet.getString(1));
+            }
+        }
+        return accountNumbers.toArray(new String[accountNumbers.size()]);
+    }
+        
         /**
          * add a new customer into the database
          *
@@ -201,7 +214,7 @@ public class Database {
          * @param print fingerprint to be saved
          * @return return the location where the image was saved
          */
-        public static String savePrint(BufferedImage print) throws IOException {
+        private static String savePrint(BufferedImage print) throws IOException {
             File file = new File(getLocation());
             try {
                 ImageIO.write(print, "jpg", file);
@@ -312,7 +325,7 @@ public class Database {
          * @throws SQLException throws SQLException if there is an error reading
          * the database
          */
-        public static String[] getFingerprintLocations() {
+        private static String[] getFingerprintLocations() {
             ArrayList<String> locations = new ArrayList<>(1);
             String query = "SELECT print FROM fingerprints"; //get all print locations stored in the database
             try (Statement statement = connection.createStatement();

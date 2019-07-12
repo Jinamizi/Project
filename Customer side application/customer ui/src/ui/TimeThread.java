@@ -3,10 +3,14 @@ package ui;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * 
+ * @author DEGUZMAN
+ */
 public class TimeThread extends MouseAdapter implements Runnable {
 
     int time = 30000; //30 seconds
-    ThreadAction action;
+    ThreadAction action; //what to do when time elapses
 
     public TimeThread(ThreadAction action) {
         this.action = action;

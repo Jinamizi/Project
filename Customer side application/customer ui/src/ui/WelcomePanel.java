@@ -70,7 +70,7 @@ public class WelcomePanel extends java.awt.Panel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void accessButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accessButtonActionPerformed
-        // TODO add your handling code here:
+        CustomerFrame.showPanel(CustomerFrame.SCANNING_PANEL);
     }//GEN-LAST:event_accessButtonActionPerformed
 
 
