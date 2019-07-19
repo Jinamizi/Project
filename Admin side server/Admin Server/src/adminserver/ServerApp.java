@@ -8,17 +8,14 @@ package adminserver;
 import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -330,7 +327,7 @@ public class ServerApp extends javax.swing.JFrame {
         while (Server.isRunning()) {
             display("Server running \nDatabase connected " + Database.checkConnection());
             try {
-                Thread.sleep(5000);
+                Thread.sleep(10000);
             } catch (InterruptedException ex) {
             }
         }

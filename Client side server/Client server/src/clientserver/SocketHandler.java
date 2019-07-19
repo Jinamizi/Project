@@ -86,6 +86,9 @@ public class SocketHandler implements Runnable {
         }
     }
     
+    /**
+     * perform the withdraw action
+     */
     private void withdraw(){
         String response ;
         try {
@@ -106,6 +109,9 @@ public class SocketHandler implements Runnable {
         }
     }
     
+    /**
+     * process getting of customers accounts and balances in the accounts
+     */
     private void getAccountBalances() {
         String response = "";
         try {
@@ -199,6 +205,11 @@ public class SocketHandler implements Runnable {
         }
     }
     
+    /**
+     * Asks the database for the id of the given print
+     * @param image the print
+     * @return the id of the print
+     */
     private String getIDForPrint(BufferedImage image) {
         return Database.getID(image);
     }

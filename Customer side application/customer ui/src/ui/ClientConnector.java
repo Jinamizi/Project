@@ -18,6 +18,14 @@ import javax.imageio.ImageIO;
 public class ClientConnector {
     public static int PORT = 8889;
     
+    /**
+     * deducts some cash from a customer's account
+     * @param idNumber the id number of the customer
+     * @param account the account of the customer
+     * @param amount the amount to withdraw
+     * @return Response from the server which can either be SUCCESS if the withdrawing was successful, UNSUCCESSFULL if withdrawal was unsuccessful, or an error message from the server
+     * @throws IOException 
+     */
     public static String withdraw(String idNumber, String account, double amount) throws IOException{
         String response = "";
         try (Socket socket = new Socket("127.0.0.1", PORT);
@@ -41,6 +49,13 @@ public class ClientConnector {
         return response;
     }
     
+    /**
+     * checks if a customer exist in the database
+     * @param idNumber the id number of the customer
+     * @param password the password of the customer
+     * @return "EXIST" the customer exist "NOT FOUND" if customer not found else an error is returned
+     * @throws IOException 
+     */
     public static String verifycustomer(String idNumber, String password) throws IOException {
         String response = "";
         try (Socket socket = new Socket("127.0.0.1", PORT);
@@ -63,6 +78,12 @@ public class ClientConnector {
         return response;
     }
     
+    /**
+     * gets all the accounts of a customer and the balances in the accounts
+     * @param idNumber id number of customer
+     * @return a map of accounts and balances
+     * @throws IOException if there was an error communicating with the server
+     */
     public static Map<String, String> getAccountBalances(String idNumber) throws IOException{
         Map<String,String> result = new HashMap<>();
         
@@ -84,9 +105,14 @@ public class ClientConnector {
         return result;
     }
     
-    public static String[] getAccount(String idNumber) throws IOException {
+    /**
+     * gets all the accounts of a particular customer
+     * @param idNumber the id number of the customer
+     * @return all the accounts of the customer
+     * @throws IOException if there was an error communicating with the server
+     */
+    public static String[] getAccounts(String idNumber) throws IOException {
         String [] result;
-        
         
         try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -106,6 +132,12 @@ public class ClientConnector {
         return null;
     }
     
+    /**
+     * get the id number of a print
+     * @param image the print
+     * @return the id number or "" if does not exist or an ERROR if there was an error
+     * @throws IOException 
+     */
     public static String verifyPrint(BufferedImage image) throws IOException{
         String response = "";
         try (Socket socket = new Socket("127.0.0.1", PORT);
@@ -115,9 +147,9 @@ public class ClientConnector {
             String request = "verify print";
             
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, response, baos)
+            ImageIO.write(image, response, baos);
             outputStream.writeUTF(request);
-            outputStream.writeObject(data);
+            outputStream.write(baos.toByteArray());
             outputStream.flush();
             
             response = inputStream.readUTF();

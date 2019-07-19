@@ -44,6 +44,8 @@ public class ScanningPanel extends java.awt.Panel {
         jLabel1 = new javax.swing.JLabel();
         submitButton = new javax.swing.JButton();
 
+        setLayout(new java.awt.BorderLayout());
+
         fingerprintLabel.setBackground(new java.awt.Color(255, 255, 255));
         fingerprintLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         fingerprintLabel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -51,8 +53,10 @@ public class ScanningPanel extends java.awt.Panel {
                 fingerprintLabelMouseClicked(evt);
             }
         });
+        add(fingerprintLabel, java.awt.BorderLayout.CENTER);
 
         jLabel1.setText("Scan fingerprint");
+        add(jLabel1, java.awt.BorderLayout.NORTH);
 
         submitButton.setText("Submit");
         submitButton.setEnabled(false);
@@ -61,33 +65,7 @@ public class ScanningPanel extends java.awt.Panel {
                 submitButtonActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(23, 23, 23)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(fingerprintLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 322, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(255, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(submitButton)
-                .addGap(265, 265, 265))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fingerprintLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(submitButton)
-                .addContainerGap(58, Short.MAX_VALUE))
-        );
+        add(submitButton, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
@@ -172,6 +150,10 @@ public class ScanningPanel extends java.awt.Panel {
         return fileName.getPath();
     }
 
+    public JLabel getFingerprintLabel() {
+        return fingerprintLabel;
+    }
+    
     public static void main(String[] arg) {
         JFrame frame = new JFrame();
         frame.add(new ScanningPanel());

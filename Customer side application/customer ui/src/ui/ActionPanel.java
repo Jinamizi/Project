@@ -1,22 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ui;
 
-/**
- *
- * @author DEGUZMAN
- */
+import java.io.IOException;
+import java.util.*;
+import javax.swing.*;
+
 public class ActionPanel extends javax.swing.JPanel {
-    CustomerFrame frame ;
+    GUITimer timer = new GUITimer();
+    
     /**
      * Creates new form ActionPanel
      */
-    public ActionPanel(CustomerFrame frame) {
+    public ActionPanel() {
         initComponents();
-        this.frame = frame;
+        addMouseListener(timer);
+        timer.start();
     }
 
     /**
@@ -36,10 +33,25 @@ public class ActionPanel extends javax.swing.JPanel {
         jLabel1.setText("Choose action");
 
         balanceButton.setText("Balance");
+        balanceButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                balanceButtonActionPerformed(evt);
+            }
+        });
 
         withdrawButton.setText("Withdraw");
+        withdrawButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                withdrawButtonActionPerformed(evt);
+            }
+        });
 
         exitButton.setText("Exit");
+        exitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -69,13 +81,68 @@ public class ActionPanel extends javax.swing.JPanel {
                 .addComponent(balanceButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(withdrawButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 160, Short.MAX_VALUE)
+                .addGap(56, 56, 56)
                 .addComponent(exitButton)
-                .addGap(24, 24, 24))
+                .addContainerGap(128, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+        CustomerFrame.showPanel(CustomerFrame.WELCOME_PANEL);
+    }//GEN-LAST:event_exitButtonActionPerformed
 
+    private void balanceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_balanceButtonActionPerformed
+        Map<String, String> map = getAccountAndBalances();
+        Set keySet = map.keySet();
+        ArrayList<String> list = new ArrayList<>(1);
+        keySet.forEach((item) -> list.add( String.format("%-10s%6s", item, map.get(item) ) ) );
+        showItems(list.toArray(new String[list.size()]));
+    }//GEN-LAST:event_balanceButtonActionPerformed
+
+    private void withdrawButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_withdrawButtonActionPerformed
+        String [] accounts = getAccounts();
+        String selection = (String) JOptionPane.showInputDialog(null,"Select account", "Prompt", JOptionPane.QUESTION_MESSAGE, null, accounts, accounts[0]);
+        if(selection != null){
+            CustomerFrame.showPanel(CustomerFrame.WITHDRAW_PANEL);
+            CustomerFrame.getWithdrawPanel().setAccount( selection);
+        }
+    }//GEN-LAST:event_withdrawButtonActionPerformed
+
+    private String[] getAccounts(){
+        String[] info = {};
+        try {
+            info = ClientConnector.getAccounts(CustomerFrame.getCustomerId());
+        } catch (IOException ex) {
+            info[0] = "Error";
+            ex.printStackTrace();
+            //Logger.getLogger(ActionPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return info;
+    }
+    
+    private Map<String, String> getAccountAndBalances() {
+        Map<String, String> info = new HashMap<>();
+        try {
+            info = ClientConnector.getAccountBalances(CustomerFrame.getCustomerId());
+        } catch (IOException ex) {
+            info.put("Error", ex.getMessage());
+            ex.printStackTrace();
+            //Logger.getLogger(ActionPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return info;
+    }
+    
+    private void showItems(String [] items) {
+        JOptionPane.showMessageDialog(this.getParent(), items);
+    }
+    
+    public static void main(String [] args) {
+        System.out.println("ActionPanel form");
+        String accounts[] = {"Strin1", "String2","String3"};
+        JList list = new JList(accounts);
+        JOptionPane.showInputDialog(null,"Select account", "Prompt", JOptionPane.QUESTION_MESSAGE, null, accounts, accounts[0]);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton balanceButton;
     private javax.swing.JButton exitButton;

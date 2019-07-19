@@ -5,18 +5,28 @@
  */
 package ui;
 
-/**
- *
- * @author DEGUZMAN
- */
+import java.awt.Cursor;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+
 public class ScanningPanel extends javax.swing.JPanel {
-    CustomerFrame frame ;
+    GUITimer timer = new GUITimer();
+    
     /**
      * Creates new form scanningPanel
      */
-    public ScanningPanel(CustomerFrame frame ) {
+    public ScanningPanel() {
         initComponents();
-        this.frame = frame;
+        addMouseListener(timer);
+        timer.start();
     }
 
     /**
@@ -29,12 +39,17 @@ public class ScanningPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        printPanel = new javax.swing.JLabel();
+        printLabel = new javax.swing.JLabel();
 
         jLabel1.setText("Scan fingerprint");
 
-        printPanel.setBackground(new java.awt.Color(255, 255, 255));
-        printPanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
+        printLabel.setBackground(new java.awt.Color(255, 255, 255));
+        printLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
+        printLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                printLabelMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -44,7 +59,7 @@ public class ScanningPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(printPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(printLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(28, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -53,14 +68,128 @@ public class ScanningPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(printPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(printLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(33, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void printLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_printLabelMouseClicked
+        //Should allow scanning of fingerprint
+        String s = getPath();
+        if (s == null) {
+            return;
+        }
+
+        setIcon(new ImageIcon(s));
+        if (printLabel.getIcon() == null) {
+            return;
+        }
+
+        try {
+            String id = getIdForPrint(ImageIO.read(new File(s)));
+            CustomerFrame.setCustomerId(id);
+            String result;
+            do {
+                String password = getPassword();
+                result = verifyCustomer(id, password);
+            } while (!processResult(result));
+
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error geting print");
+            CustomerFrame.showPanel(CustomerFrame.WELCOME_PANEL);
+            ex.printStackTrace();
+            //Logger.getLogger(ScanningPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+
+    }//GEN-LAST:event_printLabelMouseClicked
+
+    private String getPassword() {
+        return showPasswordInputDialog("Enter password");
+    }
+
+    private String showPasswordInputDialog(String message) {
+        JPasswordField passwordField = new JPasswordField();
+        JOptionPane pane = new JOptionPane();
+        pane.setMessage(passwordField);
+
+        JDialog dialog = pane.createDialog(this.getParent(), message);
+        dialog.setModal(true);
+        dialog.setVisible(true);
+        dialog.dispose();
+
+        String password = String.valueOf(passwordField.getPassword());
+        return password;
+    }
+
+    private boolean processResult(String result) {
+        if (result.equalsIgnoreCase("EXIST")) {
+            CustomerFrame.showPanel(CustomerFrame.ACTION_PANEL);
+            return true;
+        } else if (result.equalsIgnoreCase("NOT FOUND")) {
+            //showPasswordInputDialog("Credentials incorrect");
+            return false;
+        } else {
+            System.err.println(result);
+            CustomerFrame.showPanel(CustomerFrame.WELCOME_PANEL);
+            return true;
+        }
+    }
+
+    private String verifyCustomer(String id, String password) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        String result;
+        try {
+            result = ClientConnector.verifycustomer(id, password);
+        } catch (IOException ex) {
+            CustomerFrame.showPanel(CustomerFrame.WELCOME_PANEL);
+            result = "ERROR:";
+            ex.printStackTrace();
+            //Logger.getLogger(ScanningPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        setCursor(null);
+        return result;
+    }
+
+    private String getPath() {
+        JFileChooser fileChooser = new PictureChooser();
+
+        int result = fileChooser.showOpenDialog(null);
+
+        //if user clicked Cancel button on dialog, return
+        if (result == JFileChooser.CANCEL_OPTION) {
+            return null;
+        }
+
+        File fileName = fileChooser.getSelectedFile(); //get file
+
+        //display error if invalid
+        if ((fileName == null) || (fileName.getName().equals(""))) {
+            JOptionPane.showMessageDialog(this, "Invalid Name", "error", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+
+        return fileName.getPath();
+    }
+
+    private void setIcon(ImageIcon img) {
+        Image image = img.getImage();
+        image = image.getScaledInstance(printLabel.getWidth(), printLabel.getHeight(), Image.SCALE_SMOOTH);
+        ImageIcon icon = new ImageIcon(image);
+        printLabel.setIcon(icon);
+    }
+
+    private String getIdForPrint(BufferedImage image) throws IOException {
+        //String id = ClientConnector.verifyPrint(image);
+        return "333";
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel printPanel;
+    public javax.swing.JLabel printLabel;
     // End of variables declaration//GEN-END:variables
+
+    public static void main(String[] s) {
+
+    }
 }

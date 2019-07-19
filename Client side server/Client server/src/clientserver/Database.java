@@ -137,7 +137,7 @@ public class Database {
      * check if the provided print exists in the database
      *
      * @param print print to check if it exist
-     * @return true if print exist otherwise false
+     * @return the id of the print
      */
     public static String getID(BufferedImage print) {
         String location = new FingerprintFinder(getFingerprintLocations()).find(print);

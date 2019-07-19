@@ -10,13 +10,11 @@ package ui;
  * @author DEGUZMAN
  */
 public class WelcomePanel extends java.awt.Panel {
-    CustomerFrame frame ;
     /**
      * Creates new form WelcomePanel
      */
-    public WelcomePanel(CustomerFrame frame ) {
+    public WelcomePanel( ) {
         initComponents();
-        this.frame = frame;
     }
 
     /**

@@ -10,8 +10,9 @@ package ui;
  * @author DEGUZMAN
  */
 public interface ThreadAction {
+
     /**
      * defines what is supposed to be done
      */
- public void action();   
+    public void action();
 }

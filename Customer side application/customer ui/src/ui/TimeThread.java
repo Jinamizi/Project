@@ -4,12 +4,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * 
+ *
  * @author DEGUZMAN
  */
 public class TimeThread extends MouseAdapter implements Runnable {
 
-    int time = 30000; //30 seconds
+    int loadingtime = 30000;
+    int time = loadingtime; //30 seconds
     ThreadAction action; //what to do when time elapses
 
     public TimeThread(ThreadAction action) {
@@ -18,17 +19,17 @@ public class TimeThread extends MouseAdapter implements Runnable {
 
     @Override
     public void run() {
-        try(AutoCloseable finish = action::action) {
-            while (true) {
+        while (true) {
+            try {
                 Thread.sleep(1000);
                 setTime(time -= 1000);
                 if (time <= 0) {
-                    break;
+                    action.action();
+                    setTime(loadingtime);
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        } catch (Exception ex) {
-            //Logger.getLogger(TimeThread.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
         }
     }
 
@@ -38,17 +39,17 @@ public class TimeThread extends MouseAdapter implements Runnable {
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        setTime(30000);
+        setTime(loadingtime);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        setTime(30000);
+        setTime(loadingtime);
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        setTime(30000);
+        setTime(loadingtime);
     }
 
 }

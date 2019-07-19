@@ -7,6 +7,7 @@ package ui;
 
 import java.awt.Cursor;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.*;
 import java.util.Random;
@@ -25,6 +26,7 @@ import javax.swing.event.DocumentListener;
 public class DetailsForm extends javax.swing.JPanel {
 
     DocumentListener listener = new MyDocumentListener();
+
     /**
      * Creates new form DetailsForm
      */
@@ -187,73 +189,87 @@ public class DetailsForm extends javax.swing.JPanel {
     }//GEN-LAST:event_generateAccountButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-       if ( !Arrays.equals( passwordField.getPassword(), confirmPasswordField.getPassword()) ){
+        if (!Arrays.equals(passwordField.getPassword(), confirmPasswordField.getPassword())) {
             JOptionPane.showMessageDialog(this, "Confirmed password should be equal to the password", "Info", JOptionPane.ERROR_MESSAGE);
             return;
         }
-       
-       if (confirmDetails()) addCustomer( getDetails(), null);
+
+        if (confirmDetails()) {
+            addCustomer(getDetails(), null);
+        }
     }//GEN-LAST:event_okButtonActionPerformed
 
-    public Map<String, String> getDetails(){
+    public Map<String, String> getDetails() {
         Map<String, String> details = new HashMap<>();
-        details.put("first_name",firstNameField.getText());
-        details.put("last_name",lastNameField.getText());
-        details.put("id_number",idField.getText());
-        details.put("account_number",accountLabel.getText());
-        details.put("password",String.valueOf( passwordField.getPassword() ));
+        details.put("first_name", firstNameField.getText());
+        details.put("last_name", lastNameField.getText());
+        details.put("id_number", idField.getText());
+        details.put("account_number", accountLabel.getText());
+        details.put("password", String.valueOf(passwordField.getPassword()));
         return details;
     }
-    
-    public boolean confirmDetails(){
+
+    public boolean confirmDetails() {
         String fName = firstNameField.getText();
         String lName = lastNameField.getText();
         String id = idField.getText();
         String account = accountLabel.getText();
-        String password = String.valueOf( passwordField.getPassword() );
-        
+        String password = String.valueOf(passwordField.getPassword());
+
         String message = "First name: " + fName + "\n";
         message += "Last name: " + lName + "\n";
         message += "ID number: " + id + "\n";
         message += "Account: " + account + "\n";
-        
+
         int choice = JOptionPane.showConfirmDialog(this, message, "Confirm", JOptionPane.OK_CANCEL_OPTION);
         return (choice == JOptionPane.OK_OPTION);
     }
-    
-    public void addCustomer(Map<String, String> details, BufferedImage image) {
-        String [] responseT = {"SUCCESS", "UNSUCCESSFULL", "Some error occured"};
-        Random random = new Random();
-        String response = responseT[random.nextInt(3)];
-        setCursor(null);
-        
-            if (response.equalsIgnoreCase("SUCCESS")){
-                JOptionPane.showMessageDialog(this, "Successfully added");
-                AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+
+    private void processResponse(String response) {
+        if (response.equalsIgnoreCase("SUCCESS")) {
+            JOptionPane.showMessageDialog(this, "Successfully added");
+            AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+        } else if (response.equalsIgnoreCase("UNSUCCESSFULL")) {
+            int choice = JOptionPane.showConfirmDialog(this, "Customer not added\nTry again?", "Info", JOptionPane.YES_NO_OPTION);
+            if (choice == JOptionPane.YES_OPTION) {
+                //addCustomer(details, image);
             }
-            else if (response.equalsIgnoreCase("UNSUCCESSFULL")){
-                int choice = JOptionPane.showConfirmDialog(this, "Customer not added\nTry again?", "Info", JOptionPane.YES_NO_OPTION);
-                if (choice == JOptionPane.YES_OPTION)
-                    addCustomer(details, image);
-            }
-            else
-                JOptionPane.showMessageDialog(this, response, "Error", JOptionPane.INFORMATION_MESSAGE);
-            
-    }
-    
-    public void setOkButton(){
-            boolean status = !"_".equals(accountLabel.getText()) && confirmPasswordField.getPassword().length > 0 && !"".equals(firstNameField.getText()) &&
-                    !"".equals(idField.getText()) && !"".equals(lastNameField.getText()) && passwordField.getPassword().length > 0;
-            okButton.setEnabled(status);
-            
+        } else {
+            JOptionPane.showMessageDialog(this, response, "Error", JOptionPane.INFORMATION_MESSAGE);
         }
-    
+    }
+
+    public String addCustomer(Map<String, String> details, BufferedImage image) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        String response;
+        try {
+            response = Connector.addCustomer(details, image);
+        } catch (IOException ex) {
+            response = "ERROR" + ex.getMessage();
+            ex.printStackTrace();
+            //Logger.getLogger(DetailsForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        setCursor(null);
+
+        return response;
+    }
+
+    public void setOkButton() {
+        boolean status = !"_".equals(accountLabel.getText()) && confirmPasswordField.getPassword().length > 0 && !"".equals(firstNameField.getText())
+                && !"".equals(idField.getText()) && !"".equals(lastNameField.getText()) && passwordField.getPassword().length > 0;
+        okButton.setEnabled(status);
+
+    }
+
     public void getAndSetAccount() {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         generateAccountButton.setEnabled(false);
         try {
             String account = Connector.generateAccountNumber();
-            SwingUtilities.invokeLater(() -> {accountLabel.setText(account);setOkButton();});
+            SwingUtilities.invokeLater(() -> {
+                accountLabel.setText(account);
+                setOkButton();
+            });
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Info", JOptionPane.ERROR_MESSAGE);
@@ -261,7 +277,16 @@ public class DetailsForm extends javax.swing.JPanel {
         setCursor(null);
         generateAccountButton.setEnabled(true);
     }
-    
+
+    public void resetFields() {
+        accountLabel.setText("_");
+        confirmPasswordField.setText("");
+        passwordField.setText("");
+        firstNameField.setText("");
+        lastNameField.setText("");
+        idField.setText("");
+    }
+
     class MyDocumentListener implements DocumentListener {
 
         @Override
@@ -278,9 +303,9 @@ public class DetailsForm extends javax.swing.JPanel {
         public void changedUpdate(DocumentEvent e) {
             setOkButton();
         }
-        
+
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel accountLabel;
     private javax.swing.JPasswordField confirmPasswordField;
@@ -299,7 +324,7 @@ public class DetailsForm extends javax.swing.JPanel {
     private javax.swing.JPasswordField passwordField;
     // End of variables declaration//GEN-END:variables
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         JFrame frame = new JFrame("Details form");
         frame.add(new DetailsForm());
         frame.pack();

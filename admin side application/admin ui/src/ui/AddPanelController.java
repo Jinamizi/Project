@@ -38,6 +38,7 @@ public class AddPanelController extends JPanel{
     }
     
     public void showPanel(String panelName) {
+        if (panelName.equalsIgnoreCase(SCANNING_PANEL)) scanningPanel.getFingerprintLabel().setIcon(null);
         card.show(this, panelName);
     }
     

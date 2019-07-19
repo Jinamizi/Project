@@ -253,13 +253,67 @@ public class Connector {
             //send data across the socket
             outputStream.writeUTF(request);
             outputStream.writeObject(customerData);
-
+            sendImage(outputStream, print);
             //receive response
             response = inputStream.readUTF();
         }
         return response;
     }
 
+    /**
+     * used to get names of the customer with the given id number
+     * @param idNumber the id number of the customer
+     * @return the names of the customer 
+     * @throws IOException if there was an error communicating with the server
+     */
+    public static Map<String, String> getNames(String idNumber) throws IOException {
+        Map<String,String> result = new HashMap<>();
+        
+        try (Socket socket = new Socket("127.0.0.1", PORT);
+                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
+            
+            String request = "get names";
+            
+            outputStream.writeUTF(request);
+            outputStream.writeUTF(idNumber);
+            outputStream.flush();
+            
+            result= (Map<String, String>) inputStream.readObject();
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        
+        return result;
+    }
+    
+    /**
+     * gets all the accounts of a customer and the balances in the accounts
+     * @param idNumber id number of customer
+     * @return a map of accounts and balances
+     * @throws IOException if there was an error communicating with the server
+     */
+    public static Map<String, String> getAccountBalances(String idNumber) throws IOException{
+        Map<String,String> result = new HashMap<>();
+        
+        try (Socket socket = new Socket("127.0.0.1", PORT);
+                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
+            
+            String request = "get account balances";
+            
+            outputStream.writeUTF(request);
+            outputStream.writeUTF(idNumber);
+            outputStream.flush();
+            
+            result= (Map<String, String>) inputStream.readObject();
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        
+        return result;
+    }
+    
     public static void main(String[] args) throws Exception {
         System.out.println("connector");
         //System.out.println(Connector.generateAccountNumber());

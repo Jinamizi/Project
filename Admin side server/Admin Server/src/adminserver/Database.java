@@ -4,17 +4,11 @@ package adminserver;
 //change various data passed to map
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.*;
 import javax.imageio.ImageIO;
-import sourcefiles.FingerprintMatcher;
-import sourcefiles.FingerprintTemplate;
 
 /**
  * used to connect to the database and process database requests
@@ -138,18 +132,18 @@ public class Database {
         }
 
         public static String[] getAccounts(String id_number) throws SQLException {
-        String query = "SELECT account_number FROM accounts WHERE id_number = '" + id_number + "'";
-        ArrayList<String> accountNumbers = new ArrayList<>(1);
+            String query = "SELECT account_number FROM accounts WHERE id_number = '" + id_number + "'";
+            ArrayList<String> accountNumbers = new ArrayList<>(1);
 
-        try (Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(query)) {
-            while (resultSet.next()) {
-                accountNumbers.add(resultSet.getString(1));
+            try (Statement statement = connection.createStatement();
+                    ResultSet resultSet = statement.executeQuery(query)) {
+                while (resultSet.next()) {
+                    accountNumbers.add(resultSet.getString(1));
+                }
             }
+            return accountNumbers.toArray(new String[accountNumbers.size()]);
         }
-        return accountNumbers.toArray(new String[accountNumbers.size()]);
-    }
-        
+
         /**
          * add a new customer into the database
          *
@@ -277,11 +271,12 @@ public class Database {
          * @return the id_number of the fingerprint
          * @throws SQLException
          */
-        public static String getID(String location)  {
+        public static String getID(String location) {
             String query = "SELECT id_number FROM fingerprints WHERE print = '" + location + "'";
             try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(query)) {
-                if (resultSet.next()) 
+                if (resultSet.next()) {
                     return resultSet.getString(1);
+                }
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
@@ -340,6 +335,50 @@ public class Database {
             }
             return locations.toArray(new String[locations.size()]);
 
+        }
+
+        /**
+         * used to get the names of the person with the given id number
+         *
+         * @param id the id number of the person
+         * @return the names of the person
+         * @throws SQLException if there was an error reading data from the
+         * database
+         */
+        public static Map<String, String> getNames(String id) throws SQLException {
+            Map<String, String> names = new HashMap<>();
+            String query = "SELECT first_name, last_name FROM details WHERE id_number = '" + id + "'";
+            try (Statement statement = connection.createStatement();
+                    ResultSet resultSet = statement.executeQuery(query)) {
+                if (resultSet.next()) {
+                    names.put("first_name", resultSet.getString("first_name"));
+                    names.put("last_name", resultSet.getString("last_name"));
+                }
+            }
+
+            return names;
+        }
+
+        /**
+         * used to get the balances of all the accounts registered on a given id
+         * number
+         *
+         * @param idNumber the id number of the customer
+         * @return the accounts and their balances
+         * @throws Exception
+         */
+        public static Map<String, String> getAccountBalances(String idNumber) throws SQLException {
+            String query = "SELECT account_number, balance FROM accounts WHERE id_number = '" + idNumber + "'";
+            ArrayList<String> accountNumbers = new ArrayList<>(1);
+            Map<String, String> accounts = new HashMap<>();
+
+            try (Statement statement = connection.createStatement();
+                    ResultSet resultSet = statement.executeQuery(query)) {
+                while (resultSet.next()) {
+                    accounts.put(resultSet.getString("account_number"), resultSet.getString("balance"));
+                }
+            }
+            return accounts;
         }
     }
 

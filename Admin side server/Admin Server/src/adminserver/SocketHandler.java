@@ -77,6 +77,15 @@ public class SocketHandler implements Runnable {
                 case "get id":
                     readPrintAndReturnId();
                     break;
+                case "get accounts":
+                    getAccounts();
+                    break;
+                case "get account balances":
+                    returnAccountsAndBalances();
+                    break;
+                case "get names":
+                    returnNames();
+                    break;
                 default: //do nothing
             }
         } catch (IOException ex) {
@@ -85,6 +94,47 @@ public class SocketHandler implements Runnable {
         }
     }
     
+    /**
+     * reads id from the socket and returns all accounts and balances in the accounts
+     */
+    private void returnAccountsAndBalances() {
+        try {
+            String id = inputStream.readUTF();
+            Map<String, String> accounts ;
+            try {
+                accounts = Database.Customer.getAccountBalances(id);
+                outputStream.writeObject(accounts);
+            } catch (SQLException ex) {
+                outputStream.writeObject(ex.getMessage());
+            }
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    /**
+     * read an id number from the socket and return the names of the customer
+     */
+    private void returnNames(){
+        try {
+            String id = inputStream.readUTF();
+            Map<String, String> names;
+            try {
+                names = Database.Customer.getNames(id);
+                outputStream.writeObject(names);
+            } catch (SQLException ex) {
+                outputStream.writeObject(ex.getMessage());
+            }
+            
+        } catch (IOException ex) { //occurs during reading of socket
+            ex.printStackTrace();
+        }
+    }
+    
+    /**
+     * reads id number from the socket and return the accounts registered under it
+     */
     private void getAccounts() {
         try {
             String id = inputStream.readUTF();

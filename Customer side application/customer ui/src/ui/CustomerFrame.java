@@ -13,13 +13,21 @@ import java.awt.CardLayout;
  */
 public final class CustomerFrame extends javax.swing.JFrame {
     private static String customerId;
-    private static CardLayout card = new CardLayout();
-    private WelcomePanel welcomePanel = new WelcomePanel(this);
-    private ScanningPanel scanningPanel = new ScanningPanel(this);
-    private ActionPanel actionPanel = new ActionPanel(this);
+    private static final CardLayout card = new CardLayout();
+    
+    private static final WelcomePanel welcomePanel = new WelcomePanel();
+    private static final ScanningPanel scanningPanel = new ScanningPanel();
+    private static final ActionPanel actionPanel = new ActionPanel();
+    private static final WithdrawPanel withdrawPanel = new WithdrawPanel();
+    
+    TimeThread timeThread = new TimeThread(()-> {showPanel(WELCOME_PANEL);} );
+    Thread thread = new Thread(timeThread);
+    GUITimer timer = new GUITimer();
+    
     public static final String WELCOME_PANEL = "welcome_panel";
     public static final String SCANNING_PANEL = "scanning_panel";
     public static final String ACTION_PANEL = "action_panel";
+    public static final String WITHDRAW_PANEL = "withdraw_panel";
     
     public CustomerFrame() {
         initComponents();
@@ -27,13 +35,17 @@ public final class CustomerFrame extends javax.swing.JFrame {
         card.addLayoutComponent(welcomePanel, WELCOME_PANEL);
         card.addLayoutComponent(scanningPanel, SCANNING_PANEL);
         card.addLayoutComponent(actionPanel, ACTION_PANEL);
+        card.addLayoutComponent(withdrawPanel, WITHDRAW_PANEL);
         
         mainPanel.setLayout(card);
         mainPanel.add(welcomePanel);
         mainPanel.add(scanningPanel);
         mainPanel.add(actionPanel);
+        mainPanel.add(withdrawPanel);
         
-        addMouseListener(new TimeThread(()->showPanel(WELCOME_PANEL)));
+        //thread.start();
+        addMouseListener(timer);
+        timer.start();
     }
 
     public  static String getCustomerId() {
@@ -45,8 +57,29 @@ public final class CustomerFrame extends javax.swing.JFrame {
     }
 
     public static void showPanel(String panelName) {
+        if (panelName.equalsIgnoreCase(SCANNING_PANEL)) scanningPanel.printLabel.setIcon(null);
+        else if (panelName.equalsIgnoreCase(WELCOME_PANEL)) setCustomerId("");
+        else if (panelName.equalsIgnoreCase(WITHDRAW_PANEL)) withdrawPanel.getAmountField().setText("");
         card.show(mainPanel, panelName);
     }
+
+    public static WelcomePanel getWelcomePanel() {
+        return welcomePanel;
+    }
+
+    public static ScanningPanel getScanningPanel() {
+        return scanningPanel;
+    }
+
+    public static ActionPanel getActionPanel() {
+        return actionPanel;
+    }
+
+    public static WithdrawPanel getWithdrawPanel() {
+        return withdrawPanel;
+    }
+    
+    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -60,6 +93,9 @@ public final class CustomerFrame extends javax.swing.JFrame {
         mainPanel = new java.awt.Panel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setUndecorated(true);
+        setPreferredSize(new java.awt.Dimension(400, 300));
+        setResizable(false);
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -93,7 +129,8 @@ public final class CustomerFrame extends javax.swing.JFrame {
                     .addGap(0, 0, Short.MAX_VALUE)))
         );
 
-        pack();
+        setSize(new java.awt.Dimension(400, 306));
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     /**
@@ -124,10 +161,8 @@ public final class CustomerFrame extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CustomerFrame().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new CustomerFrame().setVisible(true);
         });
     }
 
