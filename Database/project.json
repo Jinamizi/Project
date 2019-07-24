@@ -1,0 +1,109 @@
+[
+{"type":"header","version":"4.8.2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"project"},
+{"type":"table","name":"accounts","database":"project","data":
+[
+{"id_number":"330","account_number":"A000002","balance":"1000.00"},
+{"id_number":"333","account_number":"A00001","balance":"741.00"},
+{"id_number":"33090","account_number":"A00002009","balance":"1000.00"},
+{"id_number":"33099","account_number":"A0000209","balance":"1000.00"},
+{"id_number":"330978","account_number":"A0008209","balance":"1000.00"},
+{"id_number":"333","account_number":"A10000","balance":"810.00"},
+{"id_number":"333","account_number":"A100021","balance":"1000.00"},
+{"id_number":"33220327","account_number":"A60","balance":"1000.00"},
+{"id_number":"34220328","account_number":"A90","balance":"1000.00"},
+{"id_number":"545444","account_number":"B42946","balance":"0.00"},
+{"id_number":"33220330","account_number":"B70","balance":"1000.00"},
+{"id_number":"33220326","account_number":"B80","balance":"1000.00"},
+{"id_number":"5454","account_number":"F46835","balance":"0.00"}
+]
+}
+,{"type":"table","name":"admin","database":"project","data":
+[
+{"username":"Tonny","password":"1234"}
+]
+}
+,{"type":"table","name":"details","database":"project","data":
+[
+{"id_number":"330","first_name":"ton","last_name":"ochi"},
+{"id_number":"33090","first_name":"ton","last_name":"ochieng"},
+{"id_number":"330978","first_name":"tonzh","last_name":"ochieng"},
+{"id_number":"33099","first_name":"tonz","last_name":"ochieng"},
+{"id_number":"33220326","first_name":"sally","last_name":"lango"},
+{"id_number":"33220327","first_name":"sally","last_name":"lango"},
+{"id_number":"33220330","first_name":"sally","last_name":"lango"},
+{"id_number":"333","first_name":"ton","last_name":"ochi"},
+{"id_number":"34220328","first_name":"tonny","last_name":"lango"},
+{"id_number":"545","first_name":"Tonny","last_name":"Lango"},
+{"id_number":"5454","first_name":"Tonny","last_name":"Lango"},
+{"id_number":"545444","first_name":"Tonny","last_name":"Lango"}
+]
+}
+,{"type":"table","name":"fingerprints","database":"project","data":
+[
+{"id_number":"545444","print":"{\"width\":363,\"height\":374,\"minutiae\":[{\"x\":108,\"y\":108,\"direction\":2.601173153319209,\"type\":\"ending\"},{\"x\":140,\"y\":212,\"direction\":2.2058230621852104,\"type\":\"ending\"},{\"x\":155,\"y\":286,\"direction\":4.5634990327751925,\"type\":\"bifurcation\"},{\"x\":192,\"y\":116,\"direction\":3.0419240010986313,\"type\":\"ending\"},{\"x\":206,\"y\":128,\"direction\":0.24497866312686414,\"type\":\"ending\"},{\"x\":192,\"y\":244,\"direction\":1.1902899496825317,\"type\":\"ending\"},{\"x\":175,\"y\":169,\"direction\":2.9441970937399127,\"type\":\"bifurcation\"},{\"x\":81,\"y\":216,\"direction\":5.275705241876658,\"type\":\"ending\"},{\"x\":148,\"y\":178,\"direction\":5.9917285127017195,\"type\":\"ending\"},{\"x\":228,\"y\":74,\"direction\":3.3865713167166573,\"type\":\"ending\"},{\"x\":267,\"y\":132,\"direction\":3.682012153860377,\"type\":\"bifurcation\"},{\"x\":160,\"y\":240,\"direction\":1.7681918866447774,\"type\":\"ending\"},{\"x\":182,\"y\":188,\"direction\":2.896613990462929,\"type\":\"ending\"},{\"x\":226,\"y\":140,\"direction\":3.43304944806766,\"type\":\"ending\"},{\"x\":234,\"y\":172,\"direction\":3.5644465797227336,\"type\":\"bifurcation\"},{\"x\":238,\"y\":156,\"direction\":0.5028432109278609,\"type\":\"ending\"},{\"x\":254,\"y\":156,\"direction\":3.522099030702158,\"type\":\"ending\"},{\"x\":149,\"y\":145,\"direction\":6.038206644052722,\"type\":\"ending\"},{\"x\":114,\"y\":234,\"direction\":1.8622531212727638,\"type\":\"bifurcation\"},{\"x\":116,\"y\":278,\"direction\":1.5208379310729538,\"type\":\"bifurcation\"},{\"x\":168,\"y\":318,\"direction\":0.8139618212362083,\"type\":\"bifurcation\"},{\"x\":179,\"y\":243,\"direction\":1.5707963267948966,\"type\":\"ending\"}]}"}
+]
+}
+,{"type":"table","name":"logs","database":"project","data":
+[
+{"action_time":"2019-06-01 15:28:29","action":"34220326 Tonny Lango added."},
+{"action_time":"2019-06-01 15:58:52","action":"A90 created for 34220326"},
+{"action_time":"2019-06-01 18:13:11","action":"34220326 tonny lango added."},
+{"action_time":"2019-06-01 18:13:31","action":"33220326 sally lango added."},
+{"action_time":"2019-06-01 18:13:44","action":"33220327 sally lango added."},
+{"action_time":"2019-06-01 18:27:10","action":"33220330 sally lango added."},
+{"action_time":"2019-06-01 18:27:40","action":"B70 created for 33220330"},
+{"action_time":"2019-06-03 01:08:52","action":null},
+{"action_time":"2019-06-03 01:17:46","action":"hi"},
+{"action_time":"2019-06-18 11:31:19","action":"333 ton ochi added."},
+{"action_time":"2019-06-18 11:31:19","action":"A00001 created for 333"},
+{"action_time":"2019-06-18 11:35:24","action":"330 ton ochi added."},
+{"action_time":"2019-06-18 11:35:24","action":"A000002 created for 330"},
+{"action_time":"2019-07-07 22:34:08","action":"A10000 created for 333"},
+{"action_time":"2019-07-07 22:38:39","action":"A100021 created for 333"},
+{"action_time":"2019-07-07 22:49:28","action":"33090 ton ochieng added."},
+{"action_time":"2019-07-07 22:49:28","action":"A00002009 created for 33090"},
+{"action_time":"2019-07-07 23:07:23","action":"33099 tonz ochieng added."},
+{"action_time":"2019-07-07 23:07:23","action":"A0000209 created for 33099"},
+{"action_time":"2019-07-07 23:19:47","action":"330978 tonzh ochieng added."},
+{"action_time":"2019-07-07 23:19:47","action":"A0008209 created for 330978"},
+{"action_time":"2019-07-11 11:48:22","action":null},
+{"action_time":"2019-07-11 11:49:34","action":null},
+{"action_time":"2019-07-11 11:50:13","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 22:59:24","action":null},
+{"action_time":"2019-07-14 23:44:17","action":null},
+{"action_time":"2019-07-14 23:47:09","action":null},
+{"action_time":"2019-07-14 23:47:59","action":null},
+{"action_time":"2019-07-14 23:49:01","action":null},
+{"action_time":"2019-07-15 00:04:52","action":null},
+{"action_time":"2019-07-15 00:05:01","action":null},
+{"action_time":"2019-07-15 00:44:00","action":null},
+{"action_time":"2019-07-24 01:27:50","action":"5454 Tonny Lango added."},
+{"action_time":"2019-07-24 01:27:50","action":"F46835 created for 5454"},
+{"action_time":"2019-07-24 02:46:36","action":"545 Tonny Lango added."},
+{"action_time":"2019-07-24 02:47:20","action":"545444 Tonny Lango added."},
+{"action_time":"2019-07-24 02:47:20","action":"B42946 created for 545444"}
+]
+}
+,{"type":"table","name":"passwords","database":"project","data":
+[
+{"id_number":"333","password":"123"},
+{"id_number":"330","password":"123"},
+{"id_number":"33090","password":"123"},
+{"id_number":"33099","password":"123"},
+{"id_number":"330978","password":"123"},
+{"id_number":"5454","password":"123"},
+{"id_number":"545444","password":"123"}
+]
+}
+]

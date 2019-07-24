@@ -10,9 +10,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.*;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -195,7 +192,8 @@ public class DetailsForm extends javax.swing.JPanel {
         }
 
         if (confirmDetails()) {
-            addCustomer(getDetails(), null);
+            BufferedImage print = AdminFrame.getAddPanel().getScanningPanel().getPrint();
+            new Thread(()->addCustomer(getDetails(), print)).start();
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
@@ -214,7 +212,6 @@ public class DetailsForm extends javax.swing.JPanel {
         String lName = lastNameField.getText();
         String id = idField.getText();
         String account = accountLabel.getText();
-        String password = String.valueOf(passwordField.getPassword());
 
         String message = "First name: " + fName + "\n";
         message += "Last name: " + lName + "\n";
@@ -226,32 +223,23 @@ public class DetailsForm extends javax.swing.JPanel {
     }
 
     private void processResponse(String response) {
+        JOptionPane.showMessageDialog(this, response);
         if (response.equalsIgnoreCase("SUCCESS")) {
-            JOptionPane.showMessageDialog(this, "Successfully added");
             AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
-        } else if (response.equalsIgnoreCase("UNSUCCESSFULL")) {
-            int choice = JOptionPane.showConfirmDialog(this, "Customer not added\nTry again?", "Info", JOptionPane.YES_NO_OPTION);
-            if (choice == JOptionPane.YES_OPTION) {
-                //addCustomer(details, image);
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, response, "Error", JOptionPane.INFORMATION_MESSAGE);
-        }
+        } 
     }
 
-    public String addCustomer(Map<String, String> details, BufferedImage image) {
+    public void addCustomer(Map<String, String> details, BufferedImage image) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        String response;
+        okButton.setEnabled(false);
         try {
-            response = Connector.addCustomer(details, image);
+            String response = Connector.addCustomer(details, image);
+            processResponse(response);
         } catch (IOException ex) {
-            response = "ERROR" + ex.getMessage();
             ex.printStackTrace();
-            //Logger.getLogger(DetailsForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         setCursor(null);
-
-        return response;
+        okButton.setEnabled(true);
     }
 
     public void setOkButton() {
@@ -331,4 +319,4 @@ public class DetailsForm extends javax.swing.JPanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
-}
+}//334

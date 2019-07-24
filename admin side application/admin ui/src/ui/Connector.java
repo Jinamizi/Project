@@ -2,19 +2,20 @@ package ui;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.*;
-import java.nio.ByteBuffer;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import sourcefiles.FingerprintTemplate;
 
 /**
  * This class is used by the admin UI to connect, send request and receive
@@ -69,8 +70,8 @@ public class Connector {
      *
      * @param idNumber the id number of the customer
      * @param password the password of the customer
-     * @return returns response from the server either the customer exist or not
-     * or if an error occur
+     * @return returns response from the server either "EXIST" if customer exist or "NOT EXIST" if customer does not exist
+     * or an error message starting with "ERROR" if an error occur
      * @throws IOException if there is an error communicating with the server
      */
     public static String verifyCustomer(String idNumber, String password) throws IOException {
@@ -105,56 +106,26 @@ public class Connector {
      * the print
      */
     public static String checkIfPrintExist(BufferedImage image) throws IOException {
-        String response;
-        System.out.println("Check if print exist");
-        try (Socket socket = new Socket("127.0.0.1", 13085);
+        try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
             String request = "check if fingerprint exist";
 
-            System.out.println("Sending request");
+            String minutiae = new FingerprintTemplate().create(convert(image)).serialize();
 
-            outputStream.writeUTF(request); //send request
-            //outputStream.flush();
-            System.out.println("Request sent");
-
-            //sendImage(out, image);
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ImageIO.write(image, "jpg", byteArrayOutputStream);
-
-            //send the size of the image first
-            byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
-            outputStream.write(size);
-            //out.write(size);
-            //out.write(byteArrayOutputStream.toByteArray());
-            outputStream.write(byteArrayOutputStream.toByteArray());
+            outputStream.writeUTF(request);
+            outputStream.writeUTF(minutiae);
             outputStream.flush();
-            
-            System.out.println("Image sent");
-            response = inputStream.readUTF();
+
+            return inputStream.readUTF();
         }
-        return response;
     }
 
-    /**
-     * used to send an image on an output stream. the size of the image is sent
-     * first the the image
-     *
-     * @param stream the output stream send the image through;
-     * @param image the image to be sent
-     * @return true if the image was sent successfully otherwise false
-     */
-    private static boolean sendImage(OutputStream outputStream, BufferedImage image) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(image, "jpg", byteArrayOutputStream);
-
-        byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
-        outputStream.write(size);
-        outputStream.write(byteArrayOutputStream.toByteArray());
-        outputStream.flush();
-
-        return true;
+    private static byte[] convert(BufferedImage image) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", bos);
+        return bos.toByteArray();
     }
 
     /**
@@ -189,20 +160,20 @@ public class Connector {
      * @throws IOException if there was an error communicating with the server
      */
     public static String getID(BufferedImage print) throws IOException {
-        String response;
         try (Socket socket = new Socket("127.0.0.1", PORT);
-                OutputStream out = socket.getOutputStream();
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-                ObjectOutputStream outputStream = new ObjectOutputStream(out)) {
+                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream())) {
 
             String request = "get id";
 
-            outputStream.writeUTF(request); //send request
-            sendImage(out, print);
+            String minutiae = new FingerprintTemplate().create(convert(print)).serialize();
 
-            response = inputStream.readUTF();
+            outputStream.writeUTF(request);
+            outputStream.writeUTF(minutiae);
+            outputStream.flush();
+
+            return inputStream.readUTF();
         }
-        return response;
     }
 
     /**
@@ -211,14 +182,14 @@ public class Connector {
      *
      * @param idNumber the id Number of the customer
      * @param accountNumber the new account number of the customer
-     * @return the response of the server
+     * @return "SUCCESSFUL" if addition was successful , "UNSUCCESSFUL" if addition was unsuccessful or an error message starting with "ERROR" if an error was encountered during addition
      * @throws IOException if there was an error communicating with the server
      */
     public static String addAccount(String idNumber, String accountNumber) throws IOException {
-        String response = "";
         try (Socket socket = new Socket("127.0.0.1", 8888);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
+            
             String request = "add account";
             Map<String, String> customerData = new HashMap<>();
             customerData.put("id_number", idNumber);
@@ -227,11 +198,10 @@ public class Connector {
             //send data across the socket
             outputStream.writeUTF(request);
             outputStream.writeObject(customerData);
+            outputStream.flush();
 
-            //receive response
-            response = inputStream.readUTF();
+            return inputStream.readUTF();
         }
-        return response;
     }
 
     /**
@@ -245,90 +215,77 @@ public class Connector {
      * @throws IOException
      */
     public static String addCustomer(Map<String, String> customerData, BufferedImage print) throws IOException {
-        String response = "";
         try (Socket socket = new Socket("127.0.0.1", 8888);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
+
             String request = "add customer";
-            //send data across the socket
+
+            String minutia = new FingerprintTemplate().create(convert(print)).serialize();
+            customerData.put("print", minutia);
+
             outputStream.writeUTF(request);
             outputStream.writeObject(customerData);
-            sendImage(outputStream, print);
-            //receive response
-            response = inputStream.readUTF();
+            outputStream.flush();
+
+            return inputStream.readUTF();
         }
-        return response;
     }
 
     /**
      * used to get names of the customer with the given id number
+     *
      * @param idNumber the id number of the customer
-     * @return the names of the customer 
+     * @return the names of the customer
      * @throws IOException if there was an error communicating with the server
      */
     public static Map<String, String> getNames(String idNumber) throws IOException {
-        Map<String,String> result = new HashMap<>();
-        
+        Map<String, String> result = new HashMap<>();
+
         try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
-            
+
             String request = "get names";
-            
+
             outputStream.writeUTF(request);
             outputStream.writeUTF(idNumber);
             outputStream.flush();
-            
-            result= (Map<String, String>) inputStream.readObject();
+
+            result = (Map<String, String>) inputStream.readObject();
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
-        
+
         return result;
     }
-    
+
     /**
      * gets all the accounts of a customer and the balances in the accounts
+     *
      * @param idNumber id number of customer
      * @return a map of accounts and balances
      * @throws IOException if there was an error communicating with the server
      */
-    public static Map<String, String> getAccountBalances(String idNumber) throws IOException{
-        Map<String,String> result = new HashMap<>();
-        
+    public static Map<String, String> getAccountBalances(String idNumber) throws IOException {
+        Map<String, String> result = new HashMap<>();
+
         try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
-            
+
             String request = "get account balances";
-            
+
             outputStream.writeUTF(request);
             outputStream.writeUTF(idNumber);
             outputStream.flush();
-            
-            result= (Map<String, String>) inputStream.readObject();
+
+            result = (Map<String, String>) inputStream.readObject();
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
-        
+
         return result;
     }
-    
-    public static void main(String[] args) throws Exception {
-        System.out.println("connector");
-        //System.out.println(Connector.generateAccountNumber());
-        //System.out.println(Connector.verifyAdmin("Tonny", "1234"));
-        //System.out.println(Connector.verifyAdmin("Tonn", "1234"));
-        //System.out.println(Connector.verifyCustomer("333", "123"));
-        //System.out.println(Connector.verifyCustomer("3333", "1234"));
-        BufferedImage image = ImageIO.read(new File("print.jpg"));
-        //System.out.println(Connector.checkIfPrintExist(image));
-        //BufferedImage image1 = ImageIO.read(new File("non_existing.jpg"));
-        System.out.println(Connector.checkIfPrintExist(image));
-        //System.out.println(Connector.addAccount("333", "A200"));
-        //System.out.println(Connector.addAccount("33344", "A200"));
-        //System.out.println(Connector.addAccount("333", "A60"));
-        //System.out.println(Connector.getID(image));
-        //System.out.println(Connector.getID(image1));
-    }
-}
+
+}//334

@@ -1,16 +1,10 @@
 package adminserver;
 
 //put the sendstring method on the try blocks
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 
 /**
  * A class used to handle and process a socket on an independent thread
@@ -21,8 +15,6 @@ import javax.imageio.ImageIO;
 public class SocketHandler implements Runnable {
 
     Socket socket;
-    InputStream in;
-    OutputStream out;
     ObjectInputStream inputStream; 
     ObjectOutputStream outputStream;
 
@@ -38,10 +30,8 @@ public class SocketHandler implements Runnable {
 
     private void setStreams() {
         try {
-            in = socket.getInputStream();
-            out = socket.getOutputStream();
-            inputStream = new ObjectInputStream(in);
-            outputStream = new ObjectOutputStream(out);
+            inputStream = new ObjectInputStream(socket.getInputStream());
+            outputStream = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -63,19 +53,19 @@ public class SocketHandler implements Runnable {
                     generateAccountNumber();
                     break;
                 case "add customer":
-                    readAndAddCustomer();
+                    readAddCustomer();
                     break;
                 case "verify customer":
                     readAndVerifyCustomer();
                     break;
                 case "check if fingerprint exist":
-                    readAndCheckIfPrintExist();
+                    readAndCheckIfMinutiaeExist();
                     break;
                 case "add account":
                     readAndAddAccount();
                     break;
                 case "get id":
-                    readPrintAndReturnId();
+                    readPrintReturnId();
                     break;
                 case "get accounts":
                     getAccounts();
@@ -89,7 +79,6 @@ public class SocketHandler implements Runnable {
                 default: //do nothing
             }
         } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
@@ -152,28 +141,26 @@ public class SocketHandler implements Runnable {
     }
 
     /**
-     * reads a print from the socket and sends back the id number of the print stored in the database
+     * reads a minutia from the socket and sends back the id number of the minutia 
      */
-    private void readPrintAndReturnId(){
+    private void readPrintReturnId(){
         String result;
         try {
-            BufferedImage image = readImage();
-            result = getIDForPrint(image);
+            String minutia = inputStream.readUTF();
+            result = getIDForMinutia(minutia);
         } catch (Exception ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             result = "ERROR" + ex.getMessage();
             ex.printStackTrace();
         }
         try {
             sendString(result);
         } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
     
-    private String getIDForPrint(BufferedImage image) {
-        return Database.Customer.getID(image);
+    private String getIDForMinutia(String minutia) throws SQLException {
+        return Database.Customer.getIDForMinutia(minutia);
     }
     
     /**
@@ -187,7 +174,7 @@ public class SocketHandler implements Runnable {
         } catch (Exception ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
-            result = ex.getMessage();
+            result = "ERROR"+ex.getMessage();
         }
         try {
             sendString(result);
@@ -210,47 +197,34 @@ public class SocketHandler implements Runnable {
     }
 
     /**
-     * reads a fingerprint image from the socket and check if it exist in the
+     * reads a fingerprint minutia from the socket and check if it exist in the
      * database. sends the id number of the fingerprint across the socket
      */
-    private void readAndCheckIfPrintExist() {
+    private void readAndCheckIfMinutiaeExist() {
         String result;
         try {
-            BufferedImage image = readImage();
-            result = printExist(image);
-        } catch (Exception ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            result = ex.getMessage();
+            String minutiae = inputStream.readUTF();
+            result = minutiaeExist(minutiae);
+        } catch (IOException | SQLException ex) {
+            result = "ERROR:" + ex.getMessage();
             ex.printStackTrace();
         }
         try {
             sendString(result);
         } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
-
+    
     /**
-     * closes the socket passed to the handler
+     * checks if the minutia exist in the database
      *
-     * @throws IOException if an error occurred during closing
+     * @param minutia the minutia to check if it exists
+     * @return  "EXIST" if it exist in database else DONT EXIST
+     * @throws SQLException if there was error communicating with the database
      */
-    private void closeSocket() throws IOException {
-        socket.close();
-    }
-
-    /**
-     * checks if the fingerprint exist in the database
-     *
-     * @param image the fingerprint to check if it exists
-     * @return the id number of the customer with the given finger print.
-     * Returns "" if fingerprint not found
-     * @throws SQLException
-     * @throws IOException
-     */
-    private String printExist(BufferedImage image) {
-        return Database.Customer.fingerprintExist(image);
+    private String minutiaeExist(String minutia) throws SQLException {
+        return Database.Customer.minutiaeExist(minutia);
     }
 
     /**
@@ -261,17 +235,15 @@ public class SocketHandler implements Runnable {
         String result;
         try {
             Map<String, String> map = (Map<String, String>) inputStream.readObject();
-            result = (verifyCustomer(map.get("id_number"), map.get("password"))) ? "EXIST" : "NOT FOUND"; 
+            result = (verifyCustomer(map.get("id_number"), map.get("password"))) ? "EXIST" : "DONT EXIST"; 
         } catch (Exception ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
-            result = ex.getMessage();
+            result = "ERROR" + ex.getMessage();
         }
 
         try {
             sendString(result);
         } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
@@ -287,62 +259,38 @@ public class SocketHandler implements Runnable {
     private boolean verifyCustomer(String id_number, String password) throws SQLException {
         return Database.Customer.customerExist(id_number, password);
     }
-
+    
     /**
      * reads customer details from the socket and adds them into the database.
      * sends "SUCCESS" if addition was successful otherwise "UNSUCCESSFUL"
      */
-    private void readAndAddCustomer() {
+    private void readAddCustomer() {
         String result;
         try {
             Map<String, String> map = (Map<String, String>) inputStream.readObject();
-            BufferedImage image = readImage();
-            result = (addCustomer(map, image)) ? "SUCCESS" : "UNSUCCESSFULL";
-        } catch (Exception ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            result = (addCustomer(map)) ? "SUCCESS" : "UNSUCCESSFULL";
+        } catch (IOException | ClassNotFoundException | SQLException ex) {
             ex.printStackTrace();
-            result = ex.getMessage();
+            result = "ERROR"+ex.getMessage();
         }
 
         try {
             sendString(result);
         } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
     }
 
     /**
-     * add a customer into the database
-     *
+     * adds a customer into the database
      * @param details the details of the customer
-     * @param fingerPrint the fingerprint of the customer
-     * @return true if customer was successfully added otherwise false
-     * @throws SQLException
-     * @throws IOException
+     * @return true if customer was added successfully otherwise false
+     * @throws SQLException if there was an error adding the customer
      */
-    private boolean addCustomer(Map<String, String> details, BufferedImage fingerPrint) throws SQLException, IOException {
-        return Database.Customer.addCustomer(details.getOrDefault("id_number", null), details.getOrDefault("first name", null),
-                details.getOrDefault("last name", null), details.getOrDefault("password", null), details.getOrDefault("account_number", null), fingerPrint);
+    private boolean addCustomer(Map<String, String> details) throws SQLException {
+        return Database.Customer.addCustomer(details);
     }
-
-    /**
-     * reads the image from the socket
-     *
-     * @return returns the image read as a buffered image
-     * @throws IOException
-     */
-    private BufferedImage readImage() throws IOException {
-            byte[] sizeAr = new byte[4];
-            inputStream.read(sizeAr);
-            int size = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
-
-            byte[] imageAr = new byte[size];
-            inputStream.read(imageAr);
-
-            return ImageIO.read(new ByteArrayInputStream(imageAr));
-    }
-
+    
     /**
      * generates a random account number and sends it through the socket
      */
@@ -419,7 +367,6 @@ public class SocketHandler implements Runnable {
         outputStream.flush();
     }
 
-
     /**
      * check if the admin with the given credentials exist in the database
      *
@@ -431,4 +378,4 @@ public class SocketHandler implements Runnable {
         return (Database.Admin.adminExist(username, password));
     }
 
-}
+}//461

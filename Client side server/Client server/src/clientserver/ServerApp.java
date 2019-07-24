@@ -328,7 +328,7 @@ public class ServerApp extends javax.swing.JFrame {
         while (Server.isRunning()) {
             display("Server running \nDatabase connected " + Database.checkConnection());
             try {
-                Thread.sleep(5000);
+                Thread.sleep(10000);
             } catch (InterruptedException ex) {
             }
         }

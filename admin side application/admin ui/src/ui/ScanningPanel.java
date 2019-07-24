@@ -10,12 +10,11 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -23,7 +22,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class ScanningPanel extends java.awt.Panel {
 
-    private String imagePath = "";
+    private String id = "";
+    private BufferedImage print;
+    Thread submitThread;
 
     /**
      * Creates new form ScanningPanel
@@ -42,9 +43,9 @@ public class ScanningPanel extends java.awt.Panel {
 
         fingerprintLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        cancelButton = new javax.swing.JButton();
         submitButton = new javax.swing.JButton();
-
-        setLayout(new java.awt.BorderLayout());
 
         fingerprintLabel.setBackground(new java.awt.Color(255, 255, 255));
         fingerprintLabel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
@@ -53,10 +54,16 @@ public class ScanningPanel extends java.awt.Panel {
                 fingerprintLabelMouseClicked(evt);
             }
         });
-        add(fingerprintLabel, java.awt.BorderLayout.CENTER);
 
         jLabel1.setText("Scan fingerprint");
-        add(jLabel1, java.awt.BorderLayout.NORTH);
+
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+        jPanel1.add(cancelButton);
 
         submitButton.setText("Submit");
         submitButton.setEnabled(false);
@@ -65,11 +72,37 @@ public class ScanningPanel extends java.awt.Panel {
                 submitButtonActionPerformed(evt);
             }
         });
-        add(submitButton, java.awt.BorderLayout.SOUTH);
+        jPanel1.add(submitButton);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                            .addComponent(fingerprintLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fingerprintLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
-        AdminFrame.getAddPanel().showPanel(AddPanelController.DETAILS_PANEL);
+        //submitThread = new Thread(this::checkIfFingerprintExist);
+        //submitThread.start();
+        checkIfFingerprintExist();
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void fingerprintLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fingerprintLabelMouseClicked
@@ -79,54 +112,118 @@ public class ScanningPanel extends java.awt.Panel {
         }
 
         setIcon(new ImageIcon(s));
-        if (fingerprintLabel.getIcon() == null) {
+
+        try {
+            print = ImageIO.read(new File(s));
+        } catch (IOException ex) {
             return;
         }
-
-        imagePath = s;
+        id = s;
         submitButton.setEnabled(true);
     }//GEN-LAST:event_fingerprintLabelMouseClicked
 
-    private void checkFingerprint() {
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        fingerprintLabel.setIcon(null);
+        if (submitThread.isAlive())submitThread.interrupt();
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void checkIfFingerprintExist() {
         submitButton.setEnabled(false);
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        this.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         try {
-            BufferedImage print = ImageIO.read(new File(imagePath));
             String response = Connector.checkIfPrintExist(print);
-            if (response.equalsIgnoreCase("DONT EXIST")) {
-                AdminFrame.getAddPanel().showPanel(AddPanelController.DETAILS_PANEL);
-            } else if (response.equalsIgnoreCase("EXIST")) {
-                String id = "sssssss"; //Connector.getID(print);
-                String[] accounts = {"A122", "A33"}; //Connector.getAccounts(id);
-            }
+            processResponse(response);
         } catch (IOException ex) {
-            Logger.getLogger(ScanningPanel.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this.getParent(), ex.getMessage(), "Info", JOptionPane.INFORMATION_MESSAGE);
+            AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+        } finally{
+            submitButton.setEnabled(true);
+            this.getParent().setCursor(null);
         }
-        submitButton.setEnabled(true);
-        setCursor(null);
+    }
+
+    private void processResponse(String response) {
+        if (response.equalsIgnoreCase("DONT EXIST")) {
+            AdminFrame.getAddPanel().showPanel(AddPanelController.DETAILS_PANEL);
+        } else if (response.equalsIgnoreCase("EXIST")) {
+            try {
+                String idFound = getIDForPrint();
+                customerExistOptions(idFound);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this.getParent(), ex.getMessage(), "Info", JOptionPane.ERROR_MESSAGE);
+                AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+            }
+        } else {
+            System.err.println(response);
+            JOptionPane.showMessageDialog(this.getParent(), response, "Info", JOptionPane.INFORMATION_MESSAGE);
+            AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+        }
+    }
+
+    private String getIDForPrint() throws IOException {
+        return Connector.getID(print);
+    }
+
+    public void customerExistOptions(String id) {
+        try {
+            String message = "Customer Exist\n";
+            message += "Name: " + Arrays.toString(getNames(id));
+            message += "\nAccounts: " + Arrays.toString(getAccounts(id));
+            message += "\nAdd account?";
+            int choice = JOptionPane.showConfirmDialog(this.getParent(), message, "info", JOptionPane.OK_CANCEL_OPTION);
+            
+            if (choice == JOptionPane.OK_OPTION)
+                AdminFrame.getAddPanel().showPanel(AddPanelController.ADD_ACCOUNT_PANEL);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this.getParent(), ex.getMessage());
+        }
+    }
+
+    private String[] getAccounts(String id) throws IOException {
+        Map<String, String> map = Connector.getAccountBalances(id);
+        return map.keySet().toArray(new String[map.size()]);
+    }
+
+    private String[] getNames(String id) throws IOException {
+        Map<String, String> map = Connector.getNames(id);
+        ArrayList<String> names = new ArrayList<>();
+        map.keySet().forEach((item) -> names.add(map.get(item)));
+        return names.toArray(new String[map.size()]);
     }
 
     public void showAddAccount() {
         String id = "sssssss"; //Connector.getID(print);
         String[] accounts = {"A122", "A33"}; //Connector.getAccounts(id);
-        
-        JOptionPane.showConfirmDialog(this, "Customer Exist\nID number: "+id+"\nAccounts: "+Arrays.toString(accounts), "Info", JOptionPane.YES_NO_OPTION);
+
+        JOptionPane.showConfirmDialog(this, "Customer Exist\nID number: " + id + "\nAccounts: " + Arrays.toString(accounts), "Info", JOptionPane.YES_NO_OPTION);
     }
 
     private void setIcon(ImageIcon img) {
-        Image image = img.getImage();
-        image = image.getScaledInstance(fingerprintLabel.getWidth(), fingerprintLabel.getHeight(), Image.SCALE_SMOOTH);
-        ImageIcon icon = new ImageIcon(image);
-        fingerprintLabel.setIcon(icon);
+        SwingUtilities.invokeLater(() -> {
+            Image image = img.getImage();
+            image = image.getScaledInstance(fingerprintLabel.getWidth(), fingerprintLabel.getHeight(), Image.SCALE_SMOOTH);
+            ImageIcon icon = new ImageIcon(image);
+            fingerprintLabel.setIcon(icon);
+        });
     }
 
-    public void setImagePath(String path) {
-        imagePath = path;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public String getId() {
+        return id;
+    }
+
+    public void setPrint(BufferedImage print) {
+        this.print = print;
+    }
+    
+    public BufferedImage getPrint() {
+        return print;
     }
 
     private String getPath() {
@@ -153,7 +250,11 @@ public class ScanningPanel extends java.awt.Panel {
     public JLabel getFingerprintLabel() {
         return fingerprintLabel;
     }
-    
+
+    public JButton getSubmitButton() {
+        return submitButton;
+    }
+
     public static void main(String[] arg) {
         JFrame frame = new JFrame();
         frame.add(new ScanningPanel());
@@ -163,8 +264,10 @@ public class ScanningPanel extends java.awt.Panel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JLabel fingerprintLabel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton submitButton;
     // End of variables declaration//GEN-END:variables
-}
+} //170

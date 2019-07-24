@@ -3,16 +3,10 @@ package clientserver;
 //add logging
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import sourcefiles.FingerprintMatcher;
-import sourcefiles.FingerprintTemplate;
 
 public class Database {
 
@@ -60,6 +54,7 @@ public class Database {
 
     /**
      * Checks if a connection to the database exist
+     *
      * @return true if there is a connection otherwise false
      */
     public static boolean connectionExist() {
@@ -113,7 +108,6 @@ public class Database {
         }
     }
 
-    
     /**
      * used to fetch all the accounts of a given customer
      *
@@ -139,13 +133,27 @@ public class Database {
      * @param print print to check if it exist
      * @return the id of the print
      */
-    public static String getID(BufferedImage print) {
+    @Deprecated
+    public static String getID(BufferedImage print) throws SQLException {
         String location = new FingerprintFinder(getFingerprintLocations()).find(print);
         return getID(location);
     }
 
     /**
+     * locates the id number for the finger print stored in the given location
+     *
+     * @param minutiae the minutiae of the print
+     * @return the id_number of the fingerprint
+     * @throws SQLException
+     */
+    public static String getMinutiaeID(String minutiae) throws SQLException {
+        return new MinutiaeFinder(getMinutiae()).find(minutiae);
+    }
+
+   
+    /**
      * used to get the id of the print stored at a given location
+     *
      * @param printLocation the location of the print
      * @return the id of the print
      */
@@ -162,10 +170,12 @@ public class Database {
     }
 
     /**
-     * used to get the balances of all the accounts registered on a given id number
+     * used to get the balances of all the accounts registered on a given id
+     * number
+     *
      * @param idNumber the id number of the customer
      * @return the accounts and their balances
-     * @throws Exception 
+     * @throws Exception
      */
     public static Map<String, String> getAccountBalances(String idNumber) throws Exception {
         String query = "SELECT account_number, balance FROM accounts WHERE id_number = '" + idNumber + "'";
@@ -188,6 +198,7 @@ public class Database {
      * @throws SQLException throws SQLException if there is an error reading the
      * database
      */
+    @Deprecated
     private static String[] getFingerprintLocations() {
         ArrayList<String> locations = new ArrayList<>(1);
         String query = "SELECT print FROM fingerprints"; //get all print locations stored in the database
@@ -204,13 +215,39 @@ public class Database {
         }
         return locations.toArray(new String[locations.size()]);
     }
+    
+    /**
+     * get all the print locations stored in the database
+     *
+     * @return returns locations stored as a String array
+     * @throws SQLException throws SQLException if there is an error reading the
+     * database
+     */
+    private static Map<String,String> getMinutiae() {
+        Map<String,String> minutiae = new HashMap<>();
+        String query = "SELECT * FROM fingerprints"; 
+        try (Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query)) {
+
+            while (resultSet.next()) //iterate the result set
+            {
+                minutiae.put(resultSet.getString(1), resultSet.getString(2)); 
+            }
+        } catch (SQLException ex) {
+            //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        }
+        return minutiae;
+    }
 
     /**
      * Deducts the amount of money from the account
+     *
      * @param idNumber the id number of the customer
      * @param account the account number of the customer
      * @param amount the amount to withdraw
-     * @return response which can be either SUCCESS, UNSUCCESSFULL or error messages
+     * @return response which can be either SUCCESS, UNSUCCESSFULL or error
+     * messages
      */
     public static String withdraw(String idNumber, String account, double amount) {
         double balance = 0.0;
@@ -228,6 +265,7 @@ public class Database {
 
     /**
      * deposits money to the given account of a id number
+     *
      * @param idNumber the id number of the customer
      * @param account the account number of the customer
      * @param amount the amount to deposit
@@ -256,4 +294,3 @@ public class Database {
 
     }
 }
-

@@ -64,7 +64,8 @@ public class SocketHandler implements Runnable {
             System.out.println("Request received: "+request);
             switch (request.toLowerCase()) {
                 case "verify print":
-                    readPrintAndReturnId();
+                    //readPrintAndReturnId();
+                    readPrintReturnId();
                     break;
                 case "get accounts":
                     getAccounts();
@@ -206,12 +207,37 @@ public class SocketHandler implements Runnable {
     }
     
     /**
+     * reads a print from the socket and sends back the id number of the print stored in the database
+     */
+    private void readPrintReturnId(){
+        String result;
+        try {
+            String minutiae = inputStream.readUTF();
+            result = getIDForMinutiae(minutiae);
+        } catch (Exception ex) {
+            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            result = "ERROR" + ex.getMessage();
+            ex.printStackTrace();
+        }
+        try {
+            sendString(result);
+        } catch (IOException ex) {
+            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        }
+    }
+    
+    /**
      * Asks the database for the id of the given print
      * @param image the print
      * @return the id of the print
      */
-    private String getIDForPrint(BufferedImage image) {
+    private String getIDForPrint(BufferedImage image) throws SQLException {
         return Database.getID(image);
+    }
+    
+    private String getIDForMinutiae(String minutiae) throws SQLException{
+        return Database.getMinutiaeID(minutiae);
     }
     
     /**
@@ -242,3 +268,4 @@ public class SocketHandler implements Runnable {
         outputStream.flush();
     }
 }
+//270
