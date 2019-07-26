@@ -57,9 +57,9 @@ public final class CustomerFrame extends javax.swing.JFrame {
     }
 
     public static void showPanel(String panelName) {
-        if (panelName.equalsIgnoreCase(SCANNING_PANEL)) scanningPanel.printLabel.setIcon(null);
+        if (panelName.equalsIgnoreCase(SCANNING_PANEL)) scanningPanel.reset();
         else if (panelName.equalsIgnoreCase(WELCOME_PANEL)) setCustomerId("");
-        else if (panelName.equalsIgnoreCase(WITHDRAW_PANEL)) withdrawPanel.getAmountField().setText("");
+        else if (panelName.equalsIgnoreCase(WITHDRAW_PANEL)) withdrawPanel.reset();
         card.show(mainPanel, panelName);
     }
 

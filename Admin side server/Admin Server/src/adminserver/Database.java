@@ -164,6 +164,7 @@ public class Database {
                 String passwordQuery = "INSERT into passwords (id_number, password) VALUES ('" + id_number + "','" + password + "')";
                 queries.add(passwordQuery);
                 
+                if (minutiaeExist(print).equalsIgnoreCase("EXIST")) throw new SQLException("Print exist");
                 String fingerprintQuery = "INSERT INTO fingerprints(id_number, print) VALUES('" + id_number + "','" + print + "')";
                 queries.add(fingerprintQuery);
                 
@@ -172,8 +173,8 @@ public class Database {
         
         private static int executeStatement(String[] queries) throws SQLException {
             try (Statement statement = connection.createStatement();
-                    SQLClosable finish = connection::rollback; //force rollback
-                    SQLClosable setCommit = () -> connection.setAutoCommit(true)) { 
+                    SQLClosable setCommit = () -> connection.setAutoCommit(true);
+                    SQLClosable finish = connection::rollback;) { 
                 
                 connection.setAutoCommit(false);
                 

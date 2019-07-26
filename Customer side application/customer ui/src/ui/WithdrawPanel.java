@@ -285,6 +285,10 @@ public class WithdrawPanel extends javax.swing.JPanel {
         return result;
     }
     
+    public void reset(){
+       getAmountField().setText("");
+    }
+    
     class FieldListeners implements DocumentListener {
 
         @Override

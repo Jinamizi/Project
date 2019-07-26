@@ -1,5 +1,8 @@
 package clientserver;
 
+//use future
+//use threads
+
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,7 +17,7 @@ import sourcefiles.FingerprintTemplate;
 public class MinutiaeFinder {
     Map<String, String> minutiae;
     FingerprintMatcher matcher;
-    String id = "";
+    String id = "b";
     ExecutorService executor;
 
     /**
@@ -34,17 +37,22 @@ public class MinutiaeFinder {
     String find(String minutia) {
         FingerprintTemplate probe = new FingerprintTemplate().deserialize(minutia);
         matcher = new FingerprintMatcher().index(probe);
-        executor = Executors.newCachedThreadPool();
+        //executor = Executors.newCachedThreadPool();
         
-        minutiae.keySet().forEach((item) -> executor.execute(new MatchingThread(minutiae.get(item))));
+        //minutiae.keySet().forEach((item) -> executor.execute(new MatchingThread(item,minutiae.get(item))));
 
-        executor.shutdown(); // shut down worker threads when their tasks complete
-
-        return getID();
+        //executor.shutdown(); // shut down worker threads when their tasks complete
+        for(String item : minutiae.keySet()){
+            FingerprintTemplate matching = new FingerprintTemplate().deserialize(minutiae.get(item));
+            if (matcher.match(matching) > 40)
+                return item;
+        }
+        
+        return "";
     }
 
     synchronized private String getID() {
-        while ("".equals(id) && !executor.isTerminated()) //while id has not been set yet and the executor has not been terminated or shutdown, wait
+        while ("b".equals(id) && !executor.isTerminated()) //while id has not been set yet and the executor has not been terminated or shutdown, wait
         {
             try {
                 wait();
@@ -55,7 +63,7 @@ public class MinutiaeFinder {
         return id;
     }
 
-    synchronized private void setLocation(String idFound) {
+    synchronized private void setID(String idFound) {
         this.id = idFound;
         executor.shutdownNow();
         notifyAll(); //wake up thread to get location
@@ -63,8 +71,9 @@ public class MinutiaeFinder {
 
     private class MatchingThread implements Runnable {
         String minutiaeToMatch;
+        String id;
 
-        public MatchingThread(String minutia) {
+        public MatchingThread(String id,String minutia) {
             this.minutiaeToMatch = minutia;
         }
 
@@ -72,7 +81,7 @@ public class MinutiaeFinder {
         public void run() {
             FingerprintTemplate matching = new FingerprintTemplate().deserialize(minutiaeToMatch);
             if (matcher.match(matching) > 40) {
-                setLocation(minutiaeToMatch);
+                setID(id);
             }
         }
 
