@@ -198,7 +198,7 @@ public class SocketHandler implements Runnable {
 
     /**
      * reads a fingerprint minutia from the socket and check if it exist in the
-     * database. sends the id number of the fingerprint across the socket
+     * database. sends "EXIST" if it exist, "DON'T EXIST" if it does not exist or an error message if there was an error.
      */
     private void readAndCheckIfMinutiaeExist() {
         String result;

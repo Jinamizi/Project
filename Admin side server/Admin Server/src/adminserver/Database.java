@@ -3,7 +3,6 @@ package adminserver;
 //add logging
 //change various data passed to map
 
-import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -127,10 +126,17 @@ public class Database {
             }
         }
 
+        /**
+         * Used to retrieve all the accounts of a given individual
+         * 
+         * @param id_number the id number of the individual whose account need to be retrieved
+         * @return all the accounts of an individual
+         * @throws SQLException if there was an error retrieving the accounts
+         */
         public static String[] getAccounts(String id_number) throws SQLException {
             String query = "SELECT account_number FROM accounts WHERE id_number = '" + id_number + "'";
             ArrayList<String> accountNumbers = new ArrayList<>(1);
-
+            
             try (Statement statement = connection.createStatement();
                     ResultSet resultSet = statement.executeQuery(query)) {
                 while (resultSet.next()) {
@@ -171,17 +177,24 @@ public class Database {
                 return (executeStatement(queries.toArray(new String[queries.size()])) > 0);
         }
         
+        /**
+         * Used to execute a group of statements
+         * 
+         * @param queries a bunch of queries that updates the database
+         * @return 1 if the update was successful
+         * @throws SQLException if there was an error updating the database
+         */
         private static int executeStatement(String[] queries) throws SQLException {
-            try (Statement statement = connection.createStatement();
-                    SQLClosable setCommit = () -> connection.setAutoCommit(true);
-                    SQLClosable finish = connection::rollback;) { 
+            try (Statement statement = connection.createStatement(); //Statement to execute the queries
+                    SQLClosable setCommit = () -> connection.setAutoCommit(true); //reset the autocommit to true
+                    SQLClosable finish = connection::rollback;) { //rollback all operation if transaction not successful
                 
                 connection.setAutoCommit(false);
                 
-                for (String query : queries ) {
+                //execute the statements
+                for (String query : queries ) 
                     if (statement.executeUpdate(query) < 1 )
                         throw new SQLException("Error during insertion");
-                }
                 
                 connection.commit();
             }
@@ -297,7 +310,7 @@ public class Database {
          *
          * @param idNumber the id number of the customer
          * @return the accounts and their balances
-         * @throws Exception
+         * @throws java.sql.SQLException
          */
         public static Map<String, String> getAccountBalances(String idNumber) throws SQLException {
             String query = "SELECT account_number, balance FROM accounts WHERE id_number = '" + idNumber + "'";
@@ -314,4 +327,4 @@ public class Database {
         }
     }
 
-} //479
+} //316

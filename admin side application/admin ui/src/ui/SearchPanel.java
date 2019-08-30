@@ -8,13 +8,10 @@ package ui;
 import java.awt.Cursor;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -30,6 +27,12 @@ public class SearchPanel extends javax.swing.JPanel {
         idField.getDocument().addDocumentListener(new FieldListener());
     }
 
+    /**
+     * Retrieve names of a customer using {@link Connector} class
+     *
+     * @param id the id number of the person to retrieve names
+     * @return the names of the customer
+     */
     public Map<String, String> getNames(String id) {
         Map<String, String> names = new HashMap<>();
         try {
@@ -41,6 +44,12 @@ public class SearchPanel extends javax.swing.JPanel {
         return names;
     }
 
+    /**
+     * Retrieve accounts and balances using {@link Connector} class
+     *
+     * @param id the id number of the person to retrieve accounts and balances
+     * @return the balances mapped to the accounts
+     */
     public Map<String, String> getAccountsAndBalances(String id) {
         Map<String, String> names = new HashMap<>();
         try {
@@ -52,21 +61,28 @@ public class SearchPanel extends javax.swing.JPanel {
         return names;
     }
 
+    /**
+     * Clear the name textfields
+     */
     public void clear() {
         firstNameField.setText(" ");
         lastNameField.setText(" ");
     }
 
     public void search() {
+        tableModel.clear();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        model.clear();
-        String id = idField.getText();
-        Map<String, String> names = getNames(id);
-        firstNameField.setText(names.get("first_name"));
-        lastNameField.setText(names.get("last_name"));
-        
-        model.getData(id);
-        
+        if (Connector.connectionExist()) {
+            String id = idField.getText();
+            Map<String, String> names = getNames(id);
+            firstNameField.setText(names.get("first_name"));
+            lastNameField.setText(names.get("last_name"));
+
+            tableModel.updateTable(id);
+        }else {
+            JOptionPane.showMessageDialog(this.getParent(), "There is no connetion with the Server", "Connection Error", JOptionPane.ERROR_MESSAGE);
+        }
+
         setCursor(null);
     }
 
@@ -124,7 +140,7 @@ public class SearchPanel extends javax.swing.JPanel {
         jScrollPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jScrollPane1.setToolTipText("accounts");
 
-        accountTable.setModel(model);
+        accountTable.setModel(tableModel);
         accountTable.setColumnSelectionAllowed(true);
         accountTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         accountTable.setShowVerticalLines(false);
@@ -189,6 +205,14 @@ public class SearchPanel extends javax.swing.JPanel {
         new Thread(this::search).start();
     }//GEN-LAST:event_idFieldActionPerformed
 
+    public static void main(String [] args){
+        JFrame frame = new JFrame("Search Panel");
+        frame.add(new SearchPanel());
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+    
     class AccountsTableModel extends AbstractTableModel {
 
         Map<String, String> data = new HashMap<>();
@@ -212,11 +236,17 @@ public class SearchPanel extends javax.swing.JPanel {
         //get name of a particular column in ResultSet
         @Override
         public String getColumnName(int column) {
-            return column == 0? "Account" : "Balance";
+            return column == 0 ? "Account" : "Balance";
         }
 
-        public void getData(String id) {
-            data = SearchPanel.this.getAccountsAndBalances(id);
+        /**
+         * update the data in the table
+         *
+         * @param id the id number of the individual whose data will fill the
+         * table
+         */
+        public void updateTable(String id) {
+            data = SearchPanel.this.getAccountsAndBalances(id); //refresh the data of the table
             keys = data.keySet().toArray(new String[data.size()]);
             fireTableDataChanged();
         }
@@ -262,5 +292,5 @@ public class SearchPanel extends javax.swing.JPanel {
     private javax.swing.JButton searchButton;
     // End of variables declaration//GEN-END:variables
 
-    AccountsTableModel model = new AccountsTableModel();
+    AccountsTableModel tableModel = new AccountsTableModel();
 }

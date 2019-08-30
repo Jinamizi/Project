@@ -6,7 +6,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.Timer;
 
 public class GUITimer extends MouseAdapter {
-    private final int loadingtime = 120000;
+    private final int loadingtime = 120000; //2 minutes
     private final Timer timer ;
     boolean actionOccured = false;
 

@@ -5,16 +5,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.*;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import sourcefiles.FingerprintTemplate;
 
 /**
@@ -27,6 +23,19 @@ import sourcefiles.FingerprintTemplate;
 public class Connector {
 
     private static final int PORT = 8888;
+
+    /**
+     * used to check if there is a connection with the server
+     *
+     * @return true if there is a connection otherwise false
+     */
+    public static boolean connectionExist() {
+        try (Socket socket = new Socket("127.0.0.1", PORT)) {
+            return socket.isConnected();
+        } catch (IOException ex) {
+            return false;
+        }
+    }
 
     /**
      * used to verify credentials of an admin.
@@ -42,13 +51,11 @@ public class Connector {
      * data
      */
     public static String verifyAdmin(String username, String password) throws IOException {
-        //if(!connect()) return "Could not connect"; //try to connect
-
-        String response = "";
+        String response;
         try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
-            System.out.println("Verifying admin");
+
             String request = "verify admin";
             Map<String, String> adminData = new HashMap<>();
             adminData.put("username", username);
@@ -59,10 +66,9 @@ public class Connector {
             outputStream.writeObject(adminData);
             outputStream.flush();
 
-            //receive response
-            response = inputStream.readUTF();
+            //receive response and return 
+            return inputStream.readUTF();
         }
-        return response;
     }
 
     /**
@@ -70,18 +76,17 @@ public class Connector {
      *
      * @param idNumber the id number of the customer
      * @param password the password of the customer
-     * @return returns response from the server either "EXIST" if customer exist or "NOT EXIST" if customer does not exist
-     * or an error message starting with "ERROR" if an error occur
+     * @return returns response from the server either "EXIST" if customer exist
+     * or "NOT EXIST" if customer does not exist or an error message starting
+     * with "ERROR" if an error occur
      * @throws IOException if there is an error communicating with the server
      */
     public static String verifyCustomer(String idNumber, String password) throws IOException {
-        String response = "";
         try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
             String request = "verify customer";
-
             Map<String, String> adminData = new HashMap<>();
             adminData.put("id_number", idNumber);
             adminData.put("password", password);
@@ -91,9 +96,8 @@ public class Connector {
             outputStream.writeObject(adminData);
 
             //receive response
-            response = inputStream.readUTF();
+            return inputStream.readUTF();
         }
-        return response;
     }
 
     /**
@@ -122,6 +126,13 @@ public class Connector {
         }
     }
 
+    /**
+     * covert a buffered image to a byte array.
+     *
+     * @param image the image to be converted to a byte array
+     * @return byte of the image
+     * @throws IOException if there was an error with the conversion
+     */
     private static byte[] convert(BufferedImage image) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.write(image, "jpg", bos);
@@ -182,14 +193,16 @@ public class Connector {
      *
      * @param idNumber the id Number of the customer
      * @param accountNumber the new account number of the customer
-     * @return "SUCCESSFUL" if addition was successful , "UNSUCCESSFUL" if addition was unsuccessful or an error message starting with "ERROR" if an error was encountered during addition
+     * @return "SUCCESSFUL" if addition was successful , "UNSUCCESSFUL" if
+     * addition was unsuccessful or an error message starting with "ERROR" if an
+     * error was encountered during addition
      * @throws IOException if there was an error communicating with the server
      */
     public static String addAccount(String idNumber, String accountNumber) throws IOException {
         try (Socket socket = new Socket("127.0.0.1", 8888);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
-            
+
             String request = "add account";
             Map<String, String> customerData = new HashMap<>();
             customerData.put("id_number", idNumber);

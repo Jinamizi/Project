@@ -6,6 +6,12 @@
 package ui;
 
 import java.awt.CardLayout;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URI;
 import javax.swing.*;
 
 /**
@@ -17,9 +23,9 @@ public class AdminFrame extends javax.swing.JFrame {
     static String HOME_PANEL = "home_panel";
     static String ADD_PANEL = "add_panel";
     static String SEARCH_PANEL = "search_panel";
-    private static HomePanelController homePanel = new HomePanelController();
-    private static AddPanelController addPanel = new AddPanelController();
-    private static SearchPanelController searchPanel = new SearchPanelController();
+    private static final HomePanelController    homePanel   = new HomePanelController();
+    private static final AddPanelController     addPanel    = new AddPanelController();
+    private static final SearchPanelController  searchPanel = new SearchPanelController();
     
     /**
      * Creates new form AdminFrame
@@ -53,6 +59,7 @@ public class AdminFrame extends javax.swing.JFrame {
     public static void showPanel(String panelName) {
         card.show(mainPanel, panelName);
     }
+    
     public static void setButtonsStatus(boolean status){
         addButton.setEnabled(status);
         searchButton.setEnabled(status);
@@ -74,6 +81,7 @@ public class AdminFrame extends javax.swing.JFrame {
         mainPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         helpMenu = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -133,6 +141,20 @@ public class AdminFrame extends javax.swing.JFrame {
         //mainPanel.setLayout(card);
 
         helpMenu.setText("Help");
+        helpMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpMenuActionPerformed(evt);
+            }
+        });
+
+        jMenuItem1.setText("About");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        helpMenu.add(jMenuItem1);
+
         jMenuBar1.add(helpMenu);
 
         setJMenuBar(jMenuBar1);
@@ -166,6 +188,42 @@ public class AdminFrame extends javax.swing.JFrame {
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         showPanel(SEARCH_PANEL);
     }//GEN-LAST:event_searchButtonActionPerformed
+
+    private void helpMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpMenuActionPerformed
+        
+    }//GEN-LAST:event_helpMenuActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        Box box = Box.createVerticalBox();
+        
+        JLabel label = new JLabel("Finger print based ATM registration");
+        label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        box .add(label);
+        
+        box .add(new JLabel("Need help? Visit"));
+        
+        JLabel linkLabel = new JLabel();
+        linkLabel.setText("<html><a href="+">Link</a></html>.");
+        linkLabel.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    URI uri = new URI("file://C:/tonny/project/help.html");
+                    Desktop.getDesktop().browse(uri);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        linkLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        box.add(linkLabel);
+        
+        JOptionPane pane = new JOptionPane(box);
+        JDialog dialog = pane.createDialog(this, "Help");
+        dialog.setModal(false);
+        dialog.setVisible(true);
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -207,6 +265,7 @@ public class AdminFrame extends javax.swing.JFrame {
     private javax.swing.JMenu helpMenu;
     private static javax.swing.JButton homeButton;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private static javax.swing.JPanel mainPanel;
     private static javax.swing.JButton searchButton;

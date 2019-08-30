@@ -1,35 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 //make sure to make it a must to pass credentials for each request
 package clientserver;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.sql.SQLException;
-import javax.imageio.ImageIO;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/**
- *
- * @author DEGUZMAN
- */
 public class SocketHandler implements Runnable {
 
     Socket socket;
-    InputStream in;
-    OutputStream out;
     ObjectInputStream inputStream; 
     ObjectOutputStream outputStream;
 
@@ -45,10 +26,8 @@ public class SocketHandler implements Runnable {
 
     private void setStreams() {
         try {
-            in = socket.getInputStream();
-            out = socket.getOutputStream();
-            inputStream = new ObjectInputStream(in);
-            outputStream = new ObjectOutputStream(out);
+            inputStream = new ObjectInputStream(socket.getInputStream());
+            outputStream = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -63,8 +42,7 @@ public class SocketHandler implements Runnable {
             String request = inputStream.readUTF();
             System.out.println("Request received: "+request);
             switch (request.toLowerCase()) {
-                case "verify print":
-                    //readPrintAndReturnId();
+                case "get id":
                     readPrintReturnId();
                     break;
                 case "get accounts":
@@ -184,28 +162,7 @@ public class SocketHandler implements Runnable {
             ex.printStackTrace();
         }
     }
-    
-    /**
-     * reads a print from the socket and sends back the id number of the print stored in the database
-     */
-    private void readPrintAndReturnId(){
-        String result;
-        try {
-            BufferedImage image = readImage();
-            result = getIDForPrint(image);
-        } catch (Exception ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            result = "ERROR" + ex.getMessage();
-            ex.printStackTrace();
-        }
-        try {
-            sendString(result);
-        } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        }
-    }
-    
+        
     /**
      * reads a print from the socket and sends back the id number of the print stored in the database
      */
@@ -228,35 +185,15 @@ public class SocketHandler implements Runnable {
     }
     
     /**
-     * Asks the database for the id of the given print
-     * @param image the print
-     * @return the id of the print
+     * used to retrieve the ID of the customer with the given finger-print minutiae
+     * @param minutiae the minutiae of the customer
+     * @return id number
+     * @throws SQLException 
      */
-    private String getIDForPrint(BufferedImage image) throws SQLException {
-        return Database.getID(image);
-    }
-    
     private String getIDForMinutiae(String minutiae) throws SQLException{
         return Database.getMinutiaeID(minutiae);
     }
-    
-    /**
-     * reads the image from the socket
-     *
-     * @return returns the image read as a buffered image
-     * @throws IOException
-     */
-    private BufferedImage readImage() throws IOException {
-            byte[] sizeAr = new byte[4];
-            inputStream.read(sizeAr);
-            int size = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
-
-            byte[] imageAr = new byte[size];
-            inputStream.read(imageAr);
-
-            return ImageIO.read(new ByteArrayInputStream(imageAr));
-    }
-    
+        
     /**
      * used to send a string across the socket
      *
@@ -268,4 +205,4 @@ public class SocketHandler implements Runnable {
         outputStream.flush();
     }
 }
-//270
+//224

@@ -104,7 +104,7 @@ public class ActionPanel extends javax.swing.JPanel {
         String selection = (String) JOptionPane.showInputDialog(null,"Select account", "Prompt", JOptionPane.QUESTION_MESSAGE, null, accounts, accounts[0]);
         if(selection != null){
             CustomerFrame.showPanel(CustomerFrame.WITHDRAW_PANEL);
-            CustomerFrame.getWithdrawPanel().setAccount( selection);
+            CustomerFrame.getWithdrawPanel().setAccountNumber( selection);
         }
     }//GEN-LAST:event_withdrawButtonActionPerformed
 
@@ -115,7 +115,6 @@ public class ActionPanel extends javax.swing.JPanel {
         } catch (IOException ex) {
             info[0] = "Error";
             ex.printStackTrace();
-            //Logger.getLogger(ActionPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         return info;
     }

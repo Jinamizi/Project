@@ -17,7 +17,7 @@ import javax.swing.event.DocumentListener;
  */
 public class WithdrawPanel extends javax.swing.JPanel {
 
-    String account = "A00001";
+    private String accountNumber;
     GUITimer timer = new GUITimer();
 
     /**
@@ -35,16 +35,16 @@ public class WithdrawPanel extends javax.swing.JPanel {
         return amountField;
     }
     
-    public String getAccount() {
-        return account;
+    public String getAccountNumber() {
+        return accountNumber;
     }
 
-    public void setAccount(String account) {
-        this.account = account;
+    public void setAccountNumber(String account) {
+        this.accountNumber = account;
     }
 
     public final void addActionListenersToNumberButtons() {
-        JButton buttons[] = {button0, button1, button2, button3, button4, button4, button5, button6, button7, button8, button9};
+        JButton buttons[] = {button0, button1, button2, button3, button4, button5, button6, button7, button8, button9};
         for (JButton button : buttons) {
             button.addActionListener((ActionEvent) -> amountField.setText(amountField.getText() + button.getText()));
         }
@@ -256,7 +256,7 @@ public class WithdrawPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void withdrawButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_withdrawButtonActionPerformed
-        if (account.equals("")) throw new IllegalStateException("No account");
+        if (accountNumber.equals("")) throw new IllegalStateException("No account");
         processResult(withdraw(Integer.parseInt(amountField.getText())));
     }//GEN-LAST:event_withdrawButtonActionPerformed
 
@@ -272,14 +272,13 @@ public class WithdrawPanel extends javax.swing.JPanel {
     }
     
     private String withdraw(int amount) {
-        String result = "";
+        String result;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            //result = ClientConnector.withdraw(CustomerFrame.getCustomerId(), account, amount);
-            result = ClientConnector.withdraw("333", account, amount);
+            result = ClientConnector.withdraw(CustomerFrame.getCustomerId(), getAccountNumber(), amount);
         } catch (IOException ex) {
             ex.printStackTrace();
-            //Logger.getLogger(WithdrawPanel.class.getName()).log(Level.SEVERE, null, ex);
+            result = ex.getMessage();
         }
         setCursor(null);
         return result;
@@ -310,15 +309,6 @@ public class WithdrawPanel extends javax.swing.JPanel {
             deleteButton.setEnabled(!amountField.getText().equals(""));
             withdrawButton.setEnabled(!amountField.getText().equals("") && Integer.parseInt(amountField.getText()) > 0);
         }
-    }
-    
-    public static void main(String[] s){
-        JFrame frame = new JFrame("Withdraw panel");
-        frame.add(new WithdrawPanel());
-        
-        frame.pack();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

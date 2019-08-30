@@ -41,10 +41,10 @@ public class PictureChooser extends JFileChooser
 	{
 		// Initialize properties
 		setMultiSelectionEnabled(false);
-		setDialogTitle("Select a fingerprint raster image");
+		setDialogTitle("Select a fingerprint");
 		
 		// Initial position
-		setCurrentDirectory(new java.io.File("C:\\tonny\\fingerprint idea\\samples"));
+		setCurrentDirectory(new java.io.File("C:\\tonny\\prints"));
 		
 		// Set filters
 		setFileSelectionMode(JFileChooser.FILES_ONLY);

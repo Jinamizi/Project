@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ui;
 
 import java.awt.image.BufferedImage;
@@ -12,12 +7,7 @@ import java.util.*;
 import javax.imageio.ImageIO;
 import sourcefiles.FingerprintTemplate;
 
-/**
- *
- * @author DEGUZMAN
- */
 public class ClientConnector {
-
     public static int PORT = 8889;
 
     /**
@@ -63,8 +53,7 @@ public class ClientConnector {
      * an error is returned
      * @throws IOException
      */
-    public static String verifycustomer(String idNumber, String password) throws IOException {
-        String response = "";
+    public static String verifyCustomer(String idNumber, String password) throws IOException {
         try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
@@ -79,10 +68,8 @@ public class ClientConnector {
             outputStream.writeObject(data);
             outputStream.flush();
 
-            response = inputStream.readUTF();
+            return inputStream.readUTF();
         }
-
-        return response;
     }
 
     /**
@@ -149,13 +136,13 @@ public class ClientConnector {
      * error
      * @throws IOException
      */
-    public static String verifyPrint(BufferedImage image) throws IOException {
+    public static String getIdForPrint(BufferedImage image) throws IOException {
         String response = "";
         try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "verify print";
+            String request = "get id";
             String minutiae = new FingerprintTemplate().create(convert(image)).serialize();
             
             outputStream.writeUTF(request);
@@ -172,10 +159,6 @@ public class ClientConnector {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ImageIO.write(image, "jpg", bos);
         return bos.toByteArray();
-    }
-
-    public static void main(String[] args) {
-
     }
 }
 //164

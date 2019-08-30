@@ -15,10 +15,10 @@ public final class CustomerFrame extends javax.swing.JFrame {
     private static String customerId;
     private static final CardLayout card = new CardLayout();
     
-    private static final WelcomePanel welcomePanel = new WelcomePanel();
-    private static final ScanningPanel scanningPanel = new ScanningPanel();
-    private static final ActionPanel actionPanel = new ActionPanel();
-    private static final WithdrawPanel withdrawPanel = new WithdrawPanel();
+    private static final WelcomePanel   welcomePanel    = new WelcomePanel();
+    private static final ScanningPanel  scanningPanel   = new ScanningPanel();
+    private static final ActionPanel    actionPanel     = new ActionPanel();
+    private static final WithdrawPanel  withdrawPanel   = new WithdrawPanel();
     
     TimeThread timeThread = new TimeThread(()-> {showPanel(WELCOME_PANEL);} );
     Thread thread = new Thread(timeThread);

@@ -129,7 +129,7 @@ public class ScanningPanel extends java.awt.Panel {
 
     private void checkIfFingerprintExist() {
         submitButton.setEnabled(false);
-        this.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         try {
             String response = Connector.checkIfPrintExist(print);
@@ -140,7 +140,7 @@ public class ScanningPanel extends java.awt.Panel {
             AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
         } finally{
             submitButton.setEnabled(true);
-            this.getParent().setCursor(null);
+            setCursor(null);
         }
     }
 
@@ -243,7 +243,7 @@ public class ScanningPanel extends java.awt.Panel {
             JOptionPane.showMessageDialog(this, "Invalid Name", "error", JOptionPane.ERROR_MESSAGE);
             return null;
         }
-
+        
         return fileName.getPath();
     }
 

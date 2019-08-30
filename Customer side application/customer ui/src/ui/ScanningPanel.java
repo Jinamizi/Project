@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class ScanningPanel extends javax.swing.JPanel {
-    
+
     GUITimer timer = new GUITimer();
 
     /**
@@ -68,7 +68,7 @@ public class ScanningPanel extends javax.swing.JPanel {
     private void printLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_printLabelMouseClicked
         String filePath = getPath();
         setIcon(new ImageIcon(filePath));
-        
+
         try {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             String id = getIdForPrint(ImageIO.read(new File(filePath)));
@@ -82,82 +82,70 @@ public class ScanningPanel extends javax.swing.JPanel {
             reset();
         }
     }//GEN-LAST:event_printLabelMouseClicked
-    
+
     private void processResponse(String response) {
         if (response.equals("")) {
             JOptionPane.showMessageDialog(this.getParent(), "Print not found");
             return;
         } else if (response.startsWith("ERROR")) {
+            JOptionPane.showMessageDialog(this.getParent(), response, "Error", JOptionPane.INFORMATION_MESSAGE);
             CustomerFrame.showPanel(CustomerFrame.WELCOME_PANEL);
-            System.err.println(response);
             return;
         }
-        
-        if (verify(response)) {
-            CustomerFrame.setCustomerId(response);
-        }
+
+        authenticate(response);
     }
-    
+
     private String getPassword() {
-        return showPasswordInputDialog("Enter password");
-    }
-    
-    public boolean verify(String id) {
-        for (int trials = 0; trials < 3; trials++) {
-            String password = getPassword();
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            String result = verifyCustomer(id, password);
-            setCursor(null);
-            if (!processResult(result)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    private String showPasswordInputDialog(String message) {
         JPasswordField passwordField = new JPasswordField();
         JOptionPane pane = new JOptionPane();
         pane.setMessage(passwordField);
-        
-        JDialog dialog = pane.createDialog(this.getParent(), message);
+
+        JDialog dialog = pane.createDialog(this.getParent(), "Enter password");
         dialog.setModal(true);
         dialog.setVisible(true);
         dialog.dispose();
-        
+
         String password = String.valueOf(passwordField.getPassword());
         return password;
     }
-    
-    private boolean processResult(String result) {
-        if (result.equalsIgnoreCase("EXIST")) {
-            CustomerFrame.showPanel(CustomerFrame.ACTION_PANEL);
-            return true;
-        } else if (result.equalsIgnoreCase("NOT FOUND")) {
-            //showPasswordInputDialog("Credentials incorrect");
-            return false;
-        } else {
-            System.err.println(result);
-            CustomerFrame.showPanel(CustomerFrame.WELCOME_PANEL);
-            return true;
+
+    public void authenticate(String id) {
+        for (int trials = 0; trials < 3; trials++) {
+            String password = getPassword();
+            String result = verifyCustomer(id, password);
+            
+            if (result.equalsIgnoreCase("EXIST")) {
+                CustomerFrame.showPanel(CustomerFrame.ACTION_PANEL);
+                CustomerFrame.setCustomerId(id);
+                break;
+            } else if (result.equalsIgnoreCase("NOT FOUND")) {
+            } else {
+                JOptionPane.showMessageDialog(this.getParent(), result, "Error", JOptionPane.INFORMATION_MESSAGE);
+                CustomerFrame.showPanel(CustomerFrame.WELCOME_PANEL);
+            }
         }
     }
-    
+
     private String verifyCustomer(String id, String password) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         String result;
         try {
-            result = ClientConnector.verifycustomer(id, password);
+            result = ClientConnector.verifyCustomer(id, password);
         } catch (IOException ex) {
             CustomerFrame.showPanel(CustomerFrame.WELCOME_PANEL);
-            result = "ERROR:";
+            result = "ERROR:" + ex.getMessage();
             ex.printStackTrace();
-            //Logger.getLogger(ScanningPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
         setCursor(null);
         return result;
     }
-    
+
+    /**
+     * prompts for the path of the print
+     *
+     * @return the path of the selected print
+     */
     private String getPath() {
         JFileChooser fileChooser = new PictureChooser();
         int result = fileChooser.showOpenDialog(null);
@@ -172,19 +160,22 @@ public class ScanningPanel extends javax.swing.JPanel {
         }
         return fileName.getPath();
     }
-    
+
     private void setIcon(ImageIcon img) {
         SwingUtilities.invokeLater(() -> {
             Image image = img.getImage().getScaledInstance(printLabel.getWidth(), printLabel.getHeight(), Image.SCALE_SMOOTH);
             printLabel.setIcon(new ImageIcon(image));
         });
-        
+
     }
-    
+
     private String getIdForPrint(BufferedImage image) throws IOException {
-        return ClientConnector.verifyPrint(image);
+        return ClientConnector.getIdForPrint(image);
     }
-    
+
+    /**
+     * sets the print label to null
+     */
     public void reset() {
         printLabel.setIcon(null);
     }
@@ -201,4 +192,4 @@ public class ScanningPanel extends javax.swing.JPanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
-} //208
+} //200

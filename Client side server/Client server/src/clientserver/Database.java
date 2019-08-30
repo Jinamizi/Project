@@ -2,7 +2,6 @@ package clientserver;
 //throw illigelState if db not connected
 //add logging
 
-import java.awt.image.BufferedImage;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -45,10 +44,12 @@ public class Database {
     }
 
     /**
-     * checks if there is a connection with the database
+     * checks if there is a connection with the database and tries to connect if there is no connection
+     * @return true if a connection exist
      */
     public static boolean checkConnection() {
-        connect();
+        if (!connectionExist())
+            connect();
         return connectionExist();
     }
 
@@ -58,13 +59,12 @@ public class Database {
      * @return true if there is a connection otherwise false
      */
     public static boolean connectionExist() {
-        boolean exist = false;
         try {
-            exist = connection != null && connection.isValid(100);
+            return connection != null && connection.isValid(100);
         } catch (SQLException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
         }
-        return exist;
     }
 
     /**
@@ -77,27 +77,27 @@ public class Database {
      * otherwise false
      */
     public static boolean customerExist(String id_number, String password) {
-        boolean found = false;
         String query = "SELECT id_number FROM passwords WHERE id_number = '" + id_number + "' AND password = '" + password + "'";
 
         try (Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
-            found = resultSet.next(); //true if data exist
+            return resultSet.next(); //true if data exist
         } catch (SQLException ex) {
-            System.err.println("SQLException:-" + ex.getMessage());
+            ex.printStackTrace();
+            return false;
         }
-        return found;
     }
 
     //id not needed here
     /**
-     * used to get the balance for a customer
+     * used to get the balance in a specified account of a customer
      *
      * @param id_number the id number of the customer
      * @param account_number the account number of the customer
      * @return the balance of the customer in the account number
+     * @throws java.sql.SQLException if there is an error reading the database
      */
-    public static float getBalance(String id_number, String account_number) throws SQLException {
+    public static double getBalance(String id_number, String account_number) throws SQLException {
         String query = "SELECT balance FROM accounts WHERE id_number = '" + id_number + "' AND account_number = '" + account_number + "'";
         try (Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
@@ -113,6 +113,7 @@ public class Database {
      *
      * @param id_number the id number of the customer
      * @return all the accounts of a customer in form of a String array
+     * @throws java.sql.SQLException if there was an error reading the accounts
      */
     public static String[] getAccounts(String id_number) throws SQLException {
         String query = "SELECT account_number FROM accounts WHERE id_number = '" + id_number + "'";
@@ -128,45 +129,13 @@ public class Database {
     }
 
     /**
-     * check if the provided print exists in the database
-     *
-     * @param print print to check if it exist
-     * @return the id of the print
-     */
-    @Deprecated
-    public static String getID(BufferedImage print) throws SQLException {
-        String location = new FingerprintFinder(getFingerprintLocations()).find(print);
-        return getID(location);
-    }
-
-    /**
-     * locates the id number for the finger print stored in the given location
+     * locates the id number for the minutiae
      *
      * @param minutiae the minutiae of the print
      * @return the id_number of the fingerprint
-     * @throws SQLException
      */
-    public static String getMinutiaeID(String minutiae) throws SQLException {
+    public static String getMinutiaeID(String minutiae) {
         return new MinutiaeFinder(getMinutiae()).find(minutiae);
-    }
-
-   
-    /**
-     * used to get the id of the print stored at a given location
-     *
-     * @param printLocation the location of the print
-     * @return the id of the print
-     */
-    private static String getID(String printLocation) {
-        String query = "SELECT id_number FROM fingerprints WHERE print = '" + printLocation + "'";
-        try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(query)) {
-            if (resultSet.next()) {
-                return resultSet.getString(1);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return "";
     }
 
     /**
@@ -190,31 +159,6 @@ public class Database {
         }
         return accounts;
     }
-
-    /**
-     * get all the print locations stored in the database
-     *
-     * @return returns locations stored as a String array
-     * @throws SQLException throws SQLException if there is an error reading the
-     * database
-     */
-    @Deprecated
-    private static String[] getFingerprintLocations() {
-        ArrayList<String> locations = new ArrayList<>(1);
-        String query = "SELECT print FROM fingerprints"; //get all print locations stored in the database
-        try (Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(query)) {
-
-            while (resultSet.next()) //iterate the result set
-            {
-                locations.add(resultSet.getString(1)); //store print location into the array list
-            }
-        } catch (SQLException ex) {
-            //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        }
-        return locations.toArray(new String[locations.size()]);
-    }
     
     /**
      * get all the print locations stored in the database
@@ -229,8 +173,7 @@ public class Database {
         try (Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
 
-            while (resultSet.next()) //iterate the result set
-            {
+            while (resultSet.next()) { //iterate the result set
                 minutiae.put(resultSet.getString(1), resultSet.getString(2)); 
             }
         } catch (SQLException ex) {
@@ -246,21 +189,18 @@ public class Database {
      * @param idNumber the id number of the customer
      * @param account the account number of the customer
      * @param amount the amount to withdraw
-     * @return response which can be either SUCCESS, UNSUCCESSFULL or error
-     * messages
+     * @return response which can be either SUCCESS, UNSUCCESSFULL or a message if the balance is less
+     * @throws java.sql.SQLException if an error occurred when deducting cash
      */
-    public static String withdraw(String idNumber, String account, double amount) {
-        double balance = 0.0;
-        String response = "";
+    public static String withdraw(String idNumber, String account, double amount) throws SQLException {
+        if( getBalance(idNumber, account) < amount){
+            return "Your account is low on cash";
+        }
         String query = "update accounts set balance = balance - '" + amount + "' where id_number = '" + idNumber + "' and account_number = '" + account + "'";
         try (Statement statement = connection.createStatement()) {
             int result = statement.executeUpdate(query);
-            response = result > 0 ? "SUCCESS" : "UNSUCCESSFUL";
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            response = ex.getMessage();
-        }
-        return response;
+            return result > 0 ? "SUCCESS" : "UNSUCCESSFUL";
+        } 
     }
 
     /**
@@ -293,4 +233,4 @@ public class Database {
         //System.out.println(Database.getID(image));
 
     }
-}
+}//296
