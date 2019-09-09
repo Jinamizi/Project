@@ -3,15 +3,15 @@ package ui;
 import java.awt.CardLayout;
 import javax.swing.*;
 
-public class AddPanelController extends JPanel {
+public final class AddPanelController extends JPanel {
 
-    CardLayout card = new CardLayout();
+    private CardLayout card = new CardLayout();
     private final ScanningPanel scanningPanel = new ScanningPanel();
     private final AddAccountPanel addAccountPanel = new AddAccountPanel();
     private final DetailsForm detailsForm = new DetailsForm();
-    public static String SCANNING_PANEL = "scanning_panel";
-    public static String ADD_ACCOUNT_PANEL = "add_account_panel";
-    public static String DETAILS_PANEL = "details_panel";
+    public static final String SCANNING_PANEL = "scanning_panel";
+    public static final String ADD_ACCOUNT_PANEL = "add_account_panel";
+    public static final String DETAILS_PANEL = "details_panel";
 
     public AddPanelController() {
         card.addLayoutComponent(scanningPanel, SCANNING_PANEL);
@@ -23,6 +23,10 @@ public class AddPanelController extends JPanel {
         add(scanningPanel);
         add(addAccountPanel);
         add(detailsForm);
+    }
+
+    public AddAccountPanel getAddAccountPanel() {
+        return addAccountPanel;
     }
 
     public ScanningPanel getScanningPanel() {
@@ -41,6 +45,8 @@ public class AddPanelController extends JPanel {
         if (panelName.equalsIgnoreCase(SCANNING_PANEL)) {
             scanningPanel.getSubmitButton().setEnabled(false);
             scanningPanel.getFingerprintLabel().setIcon(null);
+        } else if (panelName.equalsIgnoreCase(ADD_ACCOUNT_PANEL)) {
+            addAccountPanel.reset();
         }
         card.show(this, panelName);
     }

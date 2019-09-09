@@ -9,7 +9,7 @@ import java.awt.Cursor;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
+import javax.swing.*;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -19,11 +19,19 @@ import javax.swing.event.DocumentListener;
  * @author DEGUZMAN
  */
 public class AddAccountPanel extends java.awt.Panel {
+    private String idNumber ;
 
+    public String getIdNumber() {
+        return idNumber;
+    }
+
+    public void setIdNumber(String idNumber) {
+        this.idNumber = idNumber;
+    }
+    
     /**
      * Creates new form PasswordPanel
      *
-     * @param id the id to add account
      */
     public AddAccountPanel() {
         initComponents();
@@ -45,9 +53,16 @@ public class AddAccountPanel extends java.awt.Panel {
         okButton = new javax.swing.JButton();
         exitButton = new javax.swing.JButton();
         submitButton = new javax.swing.JButton();
+        infoLabel = new javax.swing.JLabel();
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel1.setText("Enter password");
+
+        passwordField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                passwordFieldActionPerformed(evt);
+            }
+        });
 
         generateAccountButton.setText("Generate Account Number");
         generateAccountButton.setEnabled(false);
@@ -83,25 +98,30 @@ public class AddAccountPanel extends java.awt.Panel {
             }
         });
 
+        infoLabel.setForeground(new java.awt.Color(255, 0, 0));
+        infoLabel.setText("  ");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(submitButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(infoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(submitButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(exitButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(okButton))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(generateAccountButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(accountLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(generateAccountButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(accountLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(49, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -112,7 +132,11 @@ public class AddAccountPanel extends java.awt.Panel {
                     .addComponent(jLabel1)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(8, 8, 8)
-                .addComponent(submitButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(submitButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(infoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGap(18, 18, 18)
                 .addComponent(generateAccountButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -131,8 +155,7 @@ public class AddAccountPanel extends java.awt.Panel {
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         String password = String.valueOf(passwordField.getPassword());
-        String id = AdminFrame.getAddPanel().getScanningPanel().getId();
-        new Thread(() -> verifyCustomer(id, password)).start();
+        new Thread(() -> verifyCustomer(getIdNumber(), password) ).start();
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void generateAccountButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateAccountButtonActionPerformed
@@ -140,24 +163,27 @@ public class AddAccountPanel extends java.awt.Panel {
     }//GEN-LAST:event_generateAccountButtonActionPerformed
 
     private void setOk() {
-        boolean status = !accountLabel.getText().equals("");
-        okButton.setEnabled(status);
+        okButton.setEnabled(!accountLabel.getText().equals(""));
     }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         if (confirmDetails()) {
-            String id = AdminFrame.getAddPanel().getScanningPanel().getId();
-            new Thread(() -> addAccount(id, accountLabel.getText())).start();
+            new Thread(() -> addAccount(getIdNumber(), accountLabel.getText())).start();
         }
     }//GEN-LAST:event_okButtonActionPerformed
+
+    private void passwordFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwordFieldActionPerformed
+        String password = String.valueOf(passwordField.getPassword());
+        new Thread(() -> verifyCustomer(getIdNumber(), password) ).start();
+    }//GEN-LAST:event_passwordFieldActionPerformed
 
     private void addAccount(String id, String account_number) {
         try {
             String result = Connector.addAccount(id, account_number);
-            if (result.equalsIgnoreCase("SUCCESSFUL")) {
-                JOptionPane.showMessageDialog(this, result);
-                AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
-            } else if (result.equalsIgnoreCase("UNSUCCESSFUL")) {
+            if (result.equalsIgnoreCase(Constants.ACTION_SUCCESSFUL)) {
+                JOptionPane.showMessageDialog(this.getParent(), "Account added successfuly");
+                //AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+            } else if (result.equalsIgnoreCase(Constants.ACTION_UNSUCCESSFUL)) {
                 JOptionPane.showMessageDialog(this, result);
             } else {
                 System.err.println(result);
@@ -170,9 +196,7 @@ public class AddAccountPanel extends java.awt.Panel {
     }
 
     private boolean confirmDetails() {
-        String id = AdminFrame.getAddPanel().getScanningPanel().getId();
-        String message = "ID: " + id;
-        message += "\nAccount number: " + accountLabel.getText();
+        String message = String.format("%-10s: %s%n%-10s : %s", "ID", getIdNumber(), "Account", accountLabel.getText());
         int choice = JOptionPane.showConfirmDialog(this, message, "Confirm", JOptionPane.OK_CANCEL_OPTION);
         return (choice == JOptionPane.OK_OPTION);
     }
@@ -196,20 +220,19 @@ public class AddAccountPanel extends java.awt.Panel {
 
     private void verifyCustomer(String id, String password) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        System.out.println("ID " + id + " password " + password);
         submitButton.setEnabled(false);
         try {
-            for (int trial = 0; trial < 3; trial++) {
-                String result = Connector.verifyCustomer(id, password);
-                if (result.equalsIgnoreCase("EXIST")) {
-                    generateAccountButton.setEnabled(true);
-                    return;
-                } else if (result.equalsIgnoreCase("NOT FOUND")) {
-                    continue;
-                } else {
-                    System.err.println(result);
-                    break;
-                }
+            String result = Connector.verifyCustomer(id, password);
+            if (result.equalsIgnoreCase(Constants.EXIST)) {
+                generateAccountButton.setEnabled(true);
+                infoLabel.setText(" ");
+            } else if (result.equalsIgnoreCase(Constants.DONT_EXIST)) {
+                infoLabel.setText("Incorrect password");
+            } else {
+                JOptionPane.showMessageDialog(this.getParent(), result);
             }
+
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this.getParent(), ex.getMessage(), "Info", JOptionPane.ERROR_MESSAGE);
@@ -217,7 +240,25 @@ public class AddAccountPanel extends java.awt.Panel {
             setCursor(null);
             submitButton.setEnabled(true);
         }
-        AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
+    }
+    
+    /**
+     * Clear the fields
+     */
+    public void reset() {
+        accountLabel.setText(" ");
+        infoLabel.setText(" ");
+        passwordField.setText(null);
+    }
+    
+    public static void main(String [] args) throws IOException{
+        JFrame frame = new JFrame("Add account panel");
+        AddAccountPanel panel = new AddAccountPanel();
+        panel.setIdNumber("1");
+        frame.add(panel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 
     class PasswordListener implements DocumentListener {
@@ -243,6 +284,7 @@ public class AddAccountPanel extends java.awt.Panel {
     private javax.swing.JLabel accountLabel;
     private javax.swing.JButton exitButton;
     private javax.swing.JButton generateAccountButton;
+    private javax.swing.JLabel infoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton okButton;
     private javax.swing.JPasswordField passwordField;

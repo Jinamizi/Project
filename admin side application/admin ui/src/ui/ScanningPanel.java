@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ui;
 
 import java.awt.Cursor;
@@ -16,10 +11,6 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
-/**
- *
- * @author DEGUZMAN
- */
 public class ScanningPanel extends java.awt.Panel {
 
     private String id = "";
@@ -100,9 +91,9 @@ public class ScanningPanel extends java.awt.Panel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
-        //submitThread = new Thread(this::checkIfFingerprintExist);
-        //submitThread.start();
-        checkIfFingerprintExist();
+        submitThread = new Thread(this::checkIfFingerprintExist);
+        submitThread.start();
+        //checkIfFingerprintExist();
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void fingerprintLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_fingerprintLabelMouseClicked
@@ -124,7 +115,9 @@ public class ScanningPanel extends java.awt.Panel {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         fingerprintLabel.setIcon(null);
-        if (submitThread.isAlive())submitThread.interrupt();
+        if (submitThread != null && submitThread.isAlive()) {
+            submitThread.interrupt();
+        }
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void checkIfFingerprintExist() {
@@ -138,16 +131,16 @@ public class ScanningPanel extends java.awt.Panel {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this.getParent(), ex.getMessage(), "Info", JOptionPane.INFORMATION_MESSAGE);
             AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
-        } finally{
+        } finally {
             submitButton.setEnabled(true);
             setCursor(null);
         }
     }
 
     private void processResponse(String response) {
-        if (response.equalsIgnoreCase("DONT EXIST")) {
+        if (response.equalsIgnoreCase(Constants.DONT_EXIST)) {
             AdminFrame.getAddPanel().showPanel(AddPanelController.DETAILS_PANEL);
-        } else if (response.equalsIgnoreCase("EXIST")) {
+        } else if (response.equalsIgnoreCase(Constants.EXIST)) {
             try {
                 String idFound = getIDForPrint();
                 customerExistOptions(idFound);
@@ -170,14 +163,16 @@ public class ScanningPanel extends java.awt.Panel {
     public void customerExistOptions(String id) {
         try {
             String message = "Customer Exist\n";
-            message += "Name: " + Arrays.toString(getNames(id));
-            message += "\nAccounts: " + Arrays.toString(getAccounts(id));
-            message += "\nAdd account?";
-            int choice = JOptionPane.showConfirmDialog(this.getParent(), message, "info", JOptionPane.OK_CANCEL_OPTION);
-            
-            if (choice == JOptionPane.OK_OPTION)
+            message = String.format("%-10s %s %n%-10s %s %n%s", "Name:", Arrays.toString(getNames(id)),
+                    "Accounts:", Arrays.toString(getAccounts(id)), "Add account?");
+            int choice = JOptionPane.showConfirmDialog(this.getParent(), message, "Info", JOptionPane.OK_CANCEL_OPTION);
+
+            if (choice == JOptionPane.OK_OPTION) {
                 AdminFrame.getAddPanel().showPanel(AddPanelController.ADD_ACCOUNT_PANEL);
+                AdminFrame.getAddPanel().getAddAccountPanel().setIdNumber(id);
+            }
         } catch (IOException ex) {
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(this.getParent(), ex.getMessage());
         }
     }
@@ -221,7 +216,7 @@ public class ScanningPanel extends java.awt.Panel {
     public void setPrint(BufferedImage print) {
         this.print = print;
     }
-    
+
     public BufferedImage getPrint() {
         return print;
     }
@@ -243,7 +238,7 @@ public class ScanningPanel extends java.awt.Panel {
             JOptionPane.showMessageDialog(this, "Invalid Name", "error", JOptionPane.ERROR_MESSAGE);
             return null;
         }
-        
+
         return fileName.getPath();
     }
 
@@ -255,12 +250,16 @@ public class ScanningPanel extends java.awt.Panel {
         return submitButton;
     }
 
-    public static void main(String[] arg) {
-        JFrame frame = new JFrame();
-        frame.add(new ScanningPanel());
-        frame.pack();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+    public static void main(String[] arg) throws IOException {
+        BufferedImage print = ImageIO.read(new File("C:/tonny/prints/non-matching.png"));
+        BufferedImage print1 = ImageIO.read(new File("C:/tonny/prints/101.png"));
+        //ScanningPanel panel = new ScanningPanel();
+        //System.out.println(Connector.getID(print));
+        //System.out.println(Connector.getID(print1));
+        //System.out.println(Connector.checkIfPrintExist(print));
+        //System.out.println(Connector.checkIfPrintExist(print1));
+        System.out.println(String.format("%-10s %s %n%-10s %s %n%s", "Name:", "Tonny",
+                "Accounts:", "Friday", "Add account?"));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

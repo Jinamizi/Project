@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ui;
 
 import java.awt.CardLayout;
@@ -14,10 +9,6 @@ import java.awt.event.MouseEvent;
 import java.net.URI;
 import javax.swing.*;
 
-/**
- *
- * @author DEGUZMAN
- */
 public class AdminFrame extends javax.swing.JFrame {
     static CardLayout card = new CardLayout();
     static String HOME_PANEL = "home_panel";

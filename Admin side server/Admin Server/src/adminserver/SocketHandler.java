@@ -46,34 +46,34 @@ public class SocketHandler implements Runnable {
             String request = inputStream.readUTF();
             System.out.println("Request received: "+request);
             switch (request.toLowerCase()) {
-                case "verify admin":
+                case Constants.VERIFY_ADMIN_REQUEST:
                     readAndVerifyAdmin();
                     break;
-                case "generate account":
+                case Constants.GENERATE_ACCOUNT_REQUEST:
                     generateAccountNumber();
                     break;
-                case "add customer":
+                case Constants.ADD_CUSTOMER_REQUEST:
                     readAddCustomer();
                     break;
-                case "verify customer":
+                case Constants.VERIFY_CUSTOMER_REQUEST:
                     readAndVerifyCustomer();
                     break;
-                case "check if fingerprint exist":
+                case Constants.CHECK_FINGERPRINT_REQUEST:
                     readAndCheckIfMinutiaeExist();
                     break;
-                case "add account":
+                case Constants.ADD_ACCOUNT_REQUEST:
                     readAndAddAccount();
                     break;
-                case "get id":
+                case Constants.GET_ID_REQUEST:
                     readPrintReturnId();
                     break;
-                case "get accounts":
+                case Constants.GET_ACCOUNTS_REQUEST:
                     getAccounts();
                     break;
-                case "get account balances":
+                case Constants.GET_ACCOUNT_BALANCES_REQUEST:
                     returnAccountsAndBalances();
                     break;
-                case "get names":
+                case Constants.GET_NAMES_REQUEST:
                     returnNames();
                     break;
                 default: //do nothing
@@ -235,7 +235,7 @@ public class SocketHandler implements Runnable {
         String result;
         try {
             Map<String, String> map = (Map<String, String>) inputStream.readObject();
-            result = (verifyCustomer(map.get("id_number"), map.get("password"))) ? "EXIST" : "DONT EXIST"; 
+            result = (verifyCustomer(map.get("id_number"), map.get("password"))) ? Constants.EXIST : Constants.DONT_EXIST; 
         } catch (Exception ex) {
             ex.printStackTrace();
             result = "ERROR" + ex.getMessage();

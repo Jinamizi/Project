@@ -120,8 +120,7 @@ public class Database {
          */
         public static boolean addAccount(String id_number, String account_number) throws SQLException {
             String query = "INSERT INTO accounts (id_number, account_number) VALUES('" + id_number + "','" + account_number + "')";
-            try (Statement statement = connection.createStatement();
-                    SQLClosable finish = connection::rollback) {
+            try (Statement statement = connection.createStatement()) {
                 return (statement.executeUpdate(query) > 0);
             }
         }
@@ -228,7 +227,7 @@ public class Database {
          */
         public static String minutiaeExist(String minutia) throws SQLException {
             MinutiaeFinder finder = new MinutiaeFinder(getMinutiae());
-            return (finder.find(minutia).equals("")) ? "DONT EXIST" : "EXIST";
+            return (finder.find(minutia).equals("")) ? Constants.DONT_EXIST : Constants.EXIST;
         }
 
         /**

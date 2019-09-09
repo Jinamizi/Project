@@ -1,28 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ui;
 
 import java.awt.Cursor;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.*;
-import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-/**
- *
- * @author DEGUZMAN
- */
 public class DetailsForm extends javax.swing.JPanel {
 
-    DocumentListener listener = new MyDocumentListener();
+    MyDocumentListener listener = new MyDocumentListener();
 
     /**
      * Creates new form DetailsForm
@@ -60,6 +52,8 @@ public class DetailsForm extends javax.swing.JPanel {
         accountLabel = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
         exitButton = new javax.swing.JButton();
+        confirmationLabel = new javax.swing.JLabel();
+        passwordSizeLabel = new javax.swing.JLabel();
 
         jLabel1.setText("Customers Details");
 
@@ -103,6 +97,12 @@ public class DetailsForm extends javax.swing.JPanel {
             }
         });
 
+        confirmationLabel.setForeground(new java.awt.Color(255, 0, 0));
+        confirmationLabel.setText("  ");
+
+        passwordSizeLabel.setForeground(new java.awt.Color(255, 0, 0));
+        passwordSizeLabel.setText("  ");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -128,16 +128,20 @@ public class DetailsForm extends javax.swing.JPanel {
                             .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(18, 18, 18)
                             .addComponent(idField, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(passwordField))
+                        .addComponent(generateAccountButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(accountLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(18, 18, 18)
-                            .addComponent(confirmPasswordField))
-                        .addComponent(generateAccountButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(accountLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(confirmationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(confirmPasswordField)))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(passwordSizeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(passwordField)))))
                 .addContainerGap(159, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -161,19 +165,23 @@ public class DetailsForm extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(passwordSizeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 21, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(confirmPasswordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(confirmationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(generateAccountButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(accountLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(exitButton))
-                .addContainerGap(97, Short.MAX_VALUE))
+                .addGap(27, 27, 27))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -193,7 +201,7 @@ public class DetailsForm extends javax.swing.JPanel {
 
         if (confirmDetails()) {
             BufferedImage print = AdminFrame.getAddPanel().getScanningPanel().getPrint();
-            new Thread(()->addCustomer(getDetails(), print)).start();
+            new Thread(() -> addCustomer(getDetails(), print)).start();
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
@@ -226,7 +234,7 @@ public class DetailsForm extends javax.swing.JPanel {
         JOptionPane.showMessageDialog(this, response);
         if (response.equalsIgnoreCase("SUCCESS")) {
             AdminFrame.getAddPanel().showPanel(AddPanelController.SCANNING_PANEL);
-        } 
+        }
     }
 
     public void addCustomer(Map<String, String> details, BufferedImage image) {
@@ -279,17 +287,36 @@ public class DetailsForm extends javax.swing.JPanel {
 
         @Override
         public void insertUpdate(DocumentEvent e) {
-            setOkButton();
+            set();
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            setOkButton();
+            set();
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            setOkButton();
+            set();
+        }
+
+        public void set() {
+            int passwordSize = passwordField.getPassword().length;
+            boolean passwordSizeOk = passwordSize > 0 && passwordSize >= 6;
+            String s = (passwordSize > 0 && passwordSize < 6) ? ("Password length must be greater than 6 characters"): (" ");
+            passwordSizeLabel.setText(s);
+            
+            boolean passwordEqual = Arrays.equals(passwordField.getPassword(), confirmPasswordField.getPassword());
+            s = (confirmPasswordField.getPassword().length > 0 && !passwordEqual) ? ("Password should be the same") : (" ");
+            confirmationLabel.setText(s);
+            
+            boolean status = !"_".equals(accountLabel.getText()) && 
+                    passwordEqual && 
+                    !"".equals(firstNameField.getText()) && 
+                    !"".equals(idField.getText()) && 
+                    !"".equals(lastNameField.getText()) && 
+                    passwordSizeOk;
+            okButton.setEnabled(status);
         }
 
     }
@@ -297,6 +324,7 @@ public class DetailsForm extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel accountLabel;
     private javax.swing.JPasswordField confirmPasswordField;
+    private javax.swing.JLabel confirmationLabel;
     private javax.swing.JButton exitButton;
     private javax.swing.JTextField firstNameField;
     private javax.swing.JButton generateAccountButton;
@@ -310,6 +338,7 @@ public class DetailsForm extends javax.swing.JPanel {
     private javax.swing.JTextField lastNameField;
     private javax.swing.JButton okButton;
     private javax.swing.JPasswordField passwordField;
+    private javax.swing.JLabel passwordSizeLabel;
     // End of variables declaration//GEN-END:variables
 
     public static void main(String[] args) {

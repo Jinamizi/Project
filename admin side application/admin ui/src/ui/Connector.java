@@ -104,19 +104,19 @@ public class Connector {
      * used to send print image to the server to check if the print exist in the
      * database
      *
-     * @param image the print to check if it exist
+     * @param print the print to check if it exist
      * @return the response of the server
      * @throws IOException if an error occurs during sending or retrieving of
      * the print
      */
-    public static String checkIfPrintExist(BufferedImage image) throws IOException {
+    public static String checkIfPrintExist(BufferedImage print) throws IOException {
         try (Socket socket = new Socket("127.0.0.1", PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
             String request = "check if fingerprint exist";
 
-            String minutiae = new FingerprintTemplate().create(convert(image)).serialize();
+            String minutiae = new FingerprintTemplate().create(convert(print)).serialize();
 
             outputStream.writeUTF(request);
             outputStream.writeUTF(minutiae);
@@ -172,8 +172,8 @@ public class Connector {
      */
     public static String getID(BufferedImage print) throws IOException {
         try (Socket socket = new Socket("127.0.0.1", PORT);
-                ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream())) {
+                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+                ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
             String request = "get id";
 
