@@ -5,11 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.*;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import sourcefiles.FingerprintTemplate;
 
@@ -22,15 +20,13 @@ import sourcefiles.FingerprintTemplate;
  */
 public class Connector {
 
-    private static final int PORT = 8888;
-
     /**
      * used to check if there is a connection with the server
      *
      * @return true if there is a connection otherwise false
      */
     public static boolean connectionExist() {
-        try (Socket socket = new Socket("127.0.0.1", PORT)) {
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT)) {
             return socket.isConnected();
         } catch (IOException ex) {
             return false;
@@ -46,20 +42,19 @@ public class Connector {
      *
      * @param username the username of the admin
      * @param password the password of the admin
-     * @return the response from the server or the error message
+     * @return the response from the server 
      * @throws IOException if an error occurred during sending or receiving of
      * data
      */
     public static String verifyAdmin(String username, String password) throws IOException {
-        String response;
-        try (Socket socket = new Socket("127.0.0.1", PORT);
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "verify admin";
+            String request = Constants.VERIFY_ADMIN_REQUEST;
             Map<String, String> adminData = new HashMap<>();
-            adminData.put("username", username);
-            adminData.put("password", password);
+            adminData.put(Constants.USERNAME, username);
+            adminData.put(Constants.PASSWORD, password);
 
             //send data across the socket
             outputStream.writeUTF(request);
@@ -76,20 +71,19 @@ public class Connector {
      *
      * @param idNumber the id number of the customer
      * @param password the password of the customer
-     * @return returns response from the server either "EXIST" if customer exist
-     * or "NOT EXIST" if customer does not exist or an error message starting
-     * with "ERROR" if an error occur
+     * @return returns response from the server either {@link Constants.EXIST} if customer exist,
+     * {@link Constants.DONT_EXIST}  if customer does not exist or an error message 
      * @throws IOException if there is an error communicating with the server
      */
     public static String verifyCustomer(String idNumber, String password) throws IOException {
-        try (Socket socket = new Socket("127.0.0.1", PORT);
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "verify customer";
+            String request = Constants.VERIFY_CUSTOMER_REQUEST;
             Map<String, String> adminData = new HashMap<>();
-            adminData.put("id_number", idNumber);
-            adminData.put("password", password);
+            adminData.put(Constants.ID_NUMBER, idNumber);
+            adminData.put(Constants.PASSWORD, password);
 
             //send data across the socket
             outputStream.writeUTF(request);
@@ -110,11 +104,11 @@ public class Connector {
      * the print
      */
     public static String checkIfPrintExist(BufferedImage print) throws IOException {
-        try (Socket socket = new Socket("127.0.0.1", PORT);
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "check if fingerprint exist";
+            String request = Constants.CHECK_FINGERPRINT_REQUEST;
 
             String minutiae = new FingerprintTemplate().create(convert(print)).serialize();
 
@@ -146,19 +140,16 @@ public class Connector {
      * @throws IOException if there was an error communicating with the server
      */
     public static String generateAccountNumber() throws Exception {
-        String response = "";
-        String request = "generate account";
-
-        try (Socket socket = new Socket("127.0.0.1", 8888);
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
+            String request = Constants.GENERATE_ACCOUNT_REQUEST;
             outputStream.writeUTF(request);
-            System.out.println("Request sent");
             outputStream.flush();
-            response = inputStream.readUTF();
+            
+            return inputStream.readUTF();
         }
-        return response;
     }
 
     /**
@@ -171,12 +162,11 @@ public class Connector {
      * @throws IOException if there was an error communicating with the server
      */
     public static String getID(BufferedImage print) throws IOException {
-        try (Socket socket = new Socket("127.0.0.1", PORT);
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "get id";
-
+            String request = Constants.GET_ID_REQUEST;
             String minutiae = new FingerprintTemplate().create(convert(print)).serialize();
 
             outputStream.writeUTF(request);
@@ -188,25 +178,23 @@ public class Connector {
     }
 
     /**
-     * add the given account to the available account of the person of the given
-     * id number
+     * add the given account to the available account of the person of the given id number
      *
      * @param idNumber the id Number of the customer
      * @param accountNumber the new account number of the customer
-     * @return "SUCCESSFUL" if addition was successful , "UNSUCCESSFUL" if
-     * addition was unsuccessful or an error message starting with "ERROR" if an
-     * error was encountered during addition
+     * @return {@link Constants.ACTION_SUCCESSFUL} if addition was successful , {@link Constants.ACTION_UNSUCCESSFUL}  if
+     * addition was unsuccessful or an error message starting with "ERROR" if an error was encountered during addition
      * @throws IOException if there was an error communicating with the server
      */
     public static String addAccount(String idNumber, String accountNumber) throws IOException {
-        try (Socket socket = new Socket("127.0.0.1", 8888);
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "add account";
+            String request = Constants.ADD_ACCOUNT_REQUEST;
             Map<String, String> customerData = new HashMap<>();
-            customerData.put("id_number", idNumber);
-            customerData.put("account_number", accountNumber);
+            customerData.put(Constants.ID_NUMBER, idNumber);
+            customerData.put(Constants.ACCOUNT_NUMBER, accountNumber);
 
             //send data across the socket
             outputStream.writeUTF(request);
@@ -228,14 +216,14 @@ public class Connector {
      * @throws IOException
      */
     public static String addCustomer(Map<String, String> customerData, BufferedImage print) throws IOException {
-        try (Socket socket = new Socket("127.0.0.1", 8888);
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "add customer";
+            String request = Constants.ADD_CUSTOMER_REQUEST;
 
             String minutia = new FingerprintTemplate().create(convert(print)).serialize();
-            customerData.put("print", minutia);
+            customerData.put(Constants.PRINT, minutia);
 
             outputStream.writeUTF(request);
             outputStream.writeObject(customerData);
@@ -252,25 +240,19 @@ public class Connector {
      * @return the names of the customer
      * @throws IOException if there was an error communicating with the server
      */
-    public static Map<String, String> getNames(String idNumber) throws IOException {
-        Map<String, String> result = new HashMap<>();
-
-        try (Socket socket = new Socket("127.0.0.1", PORT);
+    public static Map<String, String> getNames(String idNumber) throws Exception {
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "get names";
+            String request = Constants.GET_NAMES_REQUEST;
 
             outputStream.writeUTF(request);
             outputStream.writeUTF(idNumber);
             outputStream.flush();
 
-            result = (Map<String, String>) inputStream.readObject();
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-        }
-
-        return result;
+            return (Map<String, String>) inputStream.readObject();
+        } 
     }
 
     /**
@@ -280,25 +262,19 @@ public class Connector {
      * @return a map of accounts and balances
      * @throws IOException if there was an error communicating with the server
      */
-    public static Map<String, String> getAccountBalances(String idNumber) throws IOException {
-        Map<String, String> result = new HashMap<>();
-
-        try (Socket socket = new Socket("127.0.0.1", PORT);
+    public static Map<String, String> getAccountBalances(String idNumber) throws Exception {
+        try (Socket socket = new Socket(Constants.HOST, Constants.PORT);
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());) {
 
-            String request = "get account balances";
+            String request = Constants.GET_ACCOUNT_BALANCES_REQUEST;
 
             outputStream.writeUTF(request);
             outputStream.writeUTF(idNumber);
             outputStream.flush();
 
-            result = (Map<String, String>) inputStream.readObject();
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
+            return (Map<String, String>) inputStream.readObject();
         }
-
-        return result;
     }
 
-}//334
+}//280

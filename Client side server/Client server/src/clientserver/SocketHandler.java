@@ -6,12 +6,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SocketHandler implements Runnable {
 
     Socket socket;
-    ObjectInputStream inputStream; 
+    ObjectInputStream inputStream;
     ObjectOutputStream outputStream;
 
     /**
@@ -40,54 +41,45 @@ public class SocketHandler implements Runnable {
     public void run() {
         try (IOClosable closer = socket::close) {
             String request = inputStream.readUTF();
-            System.out.println("Request received: "+request);
             switch (request.toLowerCase()) {
-                case "get id":
+                case Constants.GET_ID_REQUEST:
                     readPrintReturnId();
                     break;
-                case "get accounts":
+                case Constants.GET_ACCOUNT_REQUEST:
                     getAccounts();
                     break;
-                case "verify password":
-                    veryfyPassword();
+                case Constants.VERIFY_PASSWORD_REQUEST:
+                    verifyPassword();
                     break;
-                case "get account balances":
+                case Constants.GET_ACCOUNT_BALANCES_REQUEST:
                     getAccountBalances();
                     break;
-                case "withdraw":
+                case Constants.WITHDRAW_REQUEST:
                     withdraw();
                     break;
                 default: //do nothing
             }
-        } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-    
+
     /**
      * perform the withdraw action
      */
-    private void withdraw(){
-        String response ;
+    private void withdraw() throws Exception {
+        String response = "";
         try {
-            Map<String,String> data = (Map<String,String>) inputStream.readObject();
-            response = Database.withdraw(data.get("id_number"), data.get("account_number"), Double.parseDouble( data.get("amount")));
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            response = "ERROR: " +ex.getMessage();
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-            response = "ERROR";
-        }
-        
-        try {
+            Map<String, String> data = (Map<String, String>) inputStream.readObject();
+            response = Database.withdraw(data.get(Constants.ID_NUMBER), data.get(Constants.ACCOUNT_NUMBER), Double.parseDouble(data.get("amount")));
+        } catch (IOException | ClassNotFoundException | NumberFormatException | SQLException ex) {
+            response = "Error withdrawing cash. Try again later";
+            throw ex;
+        } finally {
             sendString(response);
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
     }
-    
+
     /**
      * process getting of customers accounts and balances in the accounts
      */
@@ -107,17 +99,17 @@ public class SocketHandler implements Runnable {
         } catch (IOException ex) {
             ex.printStackTrace();
             response = ex.getMessage();
-        } 
+        }
     }
-    
+
     /**
      * used to verify customer credentials
      */
-    private void veryfyPassword() {
-       String result;
+    private void verifyPassword() {
+        String result;
         try {
             Map<String, String> map = (Map<String, String>) inputStream.readObject();
-            result = (verifyCustomer(map.get("id_number"), map.get("password"))) ? "EXIST" : "NOT FOUND"; 
+            result = (verifyCustomer(map.get("id_number"), map.get("password"))) ? Constants.ACCOUNT_NUMBER : "NOT FOUND";
         } catch (Exception ex) {
             //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -131,7 +123,7 @@ public class SocketHandler implements Runnable {
             ex.printStackTrace();
         }
     }
-    
+
     /**
      * verify if a customer with the given id_number and password exist
      *
@@ -143,57 +135,53 @@ public class SocketHandler implements Runnable {
     private boolean verifyCustomer(String id_number, String password) throws SQLException {
         return Database.customerExist(id_number, password);
     }
-    
+
     /**
-     * gets the accounts of particular id read from sockets. sends result back as a string array
+     * gets the accounts of particular id read from sockets. sends result back
+     * as a string array
      */
-    private void getAccounts() {
+    private void getAccounts() throws SQLException, IOException {
+        String[] accounts = new String[1];
         try {
             String id = inputStream.readUTF();
-            String[] accounts;
-            try {
-                accounts = Database.getAccounts(id);
-                outputStream.writeObject(accounts);
-            } catch (SQLException ex) {
-                outputStream.writeObject(ex.getMessage());
-            }
-            
+            accounts = Database.getAccounts(id);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            accounts[0] = "An error occured getting the accounts. Try again later or check with the bank"; 
+            throw ex;
+        } finally{
+            outputStream.writeObject(accounts);
         }
     }
-        
+
     /**
-     * reads a print from the socket and sends back the id number of the print stored in the database
+     * reads a print from the socket and sends back the id number of the print
+     * stored in the database
      */
-    private void readPrintReturnId(){
-        String result;
+    private void readPrintReturnId() throws Exception {
+        String result = "";
         try {
             String minutiae = inputStream.readUTF();
             result = getIDForMinutiae(minutiae);
-        } catch (Exception ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            result = "ERROR" + ex.getMessage();
-            ex.printStackTrace();
-        }
-        try {
+        } catch (IOException | SQLException ex) {
+            result = "Error processing print. Try again later or check with the bank";
+            throw ex;
+        } finally {
             sendString(result);
-        } catch (IOException ex) {
-            //Logger.getLogger(SocketHandler.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
         }
     }
-    
+
     /**
-     * used to retrieve the ID of the customer with the given finger-print minutiae
+     * used to retrieve the ID of the customer with the given finger-print
+     * minutiae
+     *
      * @param minutiae the minutiae of the customer
      * @return id number
-     * @throws SQLException 
+     * @throws SQLException
      */
-    private String getIDForMinutiae(String minutiae) throws SQLException{
+    private String getIDForMinutiae(String minutiae) throws SQLException {
         return Database.getMinutiaeID(minutiae);
     }
-        
+
     /**
      * used to send a string across the socket
      *
@@ -205,4 +193,4 @@ public class SocketHandler implements Runnable {
         outputStream.flush();
     }
 }
-//224
+//201

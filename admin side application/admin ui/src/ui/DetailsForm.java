@@ -207,24 +207,20 @@ public class DetailsForm extends javax.swing.JPanel {
 
     public Map<String, String> getDetails() {
         Map<String, String> details = new HashMap<>();
-        details.put("first_name", firstNameField.getText());
-        details.put("last_name", lastNameField.getText());
-        details.put("id_number", idField.getText());
-        details.put("account_number", accountLabel.getText());
-        details.put("password", String.valueOf(passwordField.getPassword()));
+        details.put(Constants.FIRST_NAME, firstNameField.getText());
+        details.put(Constants.LAST_NAME, lastNameField.getText());
+        details.put(Constants.ID_NUMBER, idField.getText());
+        details.put(Constants.ACCOUNT_NUMBER, accountLabel.getText());
+        details.put(Constants.PASSWORD, String.valueOf(passwordField.getPassword()));
         return details;
     }
 
     public boolean confirmDetails() {
-        String fName = firstNameField.getText();
-        String lName = lastNameField.getText();
-        String id = idField.getText();
-        String account = accountLabel.getText();
-
-        String message = "First name: " + fName + "\n";
-        message += "Last name: " + lName + "\n";
-        message += "ID number: " + id + "\n";
-        message += "Account: " + account + "\n";
+        String message = String.format("%13s : %-15s %n%13s : %-15s %n%13s : %-15s %n%13s : %-15s",
+                "First name", firstNameField.getText(),
+                "Last name", lastNameField.getText(),
+                "ID number", idField.getText(), 
+                "Account", accountLabel.getText() );
 
         int choice = JOptionPane.showConfirmDialog(this, message, "Confirm", JOptionPane.OK_CANCEL_OPTION);
         return (choice == JOptionPane.OK_OPTION);
@@ -247,6 +243,7 @@ public class DetailsForm extends javax.swing.JPanel {
             ex.printStackTrace();
         }
         setCursor(null);
+        resetFields();
         okButton.setEnabled(true);
     }
 

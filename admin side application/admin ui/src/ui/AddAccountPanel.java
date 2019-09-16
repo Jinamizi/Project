@@ -7,17 +7,12 @@ package ui;
 
 import java.awt.Cursor;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-/**
- *
- * @author DEGUZMAN
- */
 public class AddAccountPanel extends java.awt.Panel {
     private String idNumber ;
 
@@ -186,7 +181,6 @@ public class AddAccountPanel extends java.awt.Panel {
             } else if (result.equalsIgnoreCase(Constants.ACTION_UNSUCCESSFUL)) {
                 JOptionPane.showMessageDialog(this, result);
             } else {
-                System.err.println(result);
                 JOptionPane.showMessageDialog(this, result, "Info", JOptionPane.ERROR_MESSAGE);
             }
         } catch (IOException ex) {

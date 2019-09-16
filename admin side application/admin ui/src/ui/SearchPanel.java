@@ -1,16 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ui;
 
 import java.awt.Cursor;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -33,15 +30,8 @@ public class SearchPanel extends javax.swing.JPanel {
      * @param id the id number of the person to retrieve names
      * @return the names of the customer
      */
-    public Map<String, String> getNames(String id) {
-        Map<String, String> names = new HashMap<>();
-        try {
-            names = Connector.getNames(id);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, ex.getMessage());
-        }
-        return names;
+    public Map<String, String> getNames(String id) throws IOException {
+        return Connector.getNames(id);
     }
 
     /**
@@ -50,15 +40,8 @@ public class SearchPanel extends javax.swing.JPanel {
      * @param id the id number of the person to retrieve accounts and balances
      * @return the balances mapped to the accounts
      */
-    public Map<String, String> getAccountsAndBalances(String id) {
-        Map<String, String> names = new HashMap<>();
-        try {
-            names = Connector.getAccountBalances(id);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, ex.getMessage());
-        }
-        return names;
+    public Map<String, String> getAccountsAndBalances(String id) throws IOException{
+        return Connector.getAccountBalances(id);
     }
 
     /**
@@ -73,12 +56,16 @@ public class SearchPanel extends javax.swing.JPanel {
         tableModel.clear();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (Connector.connectionExist()) {
-            String id = idField.getText();
-            Map<String, String> names = getNames(id);
-            firstNameField.setText(names.get("first_name"));
-            lastNameField.setText(names.get("last_name"));
-
-            tableModel.updateTable(id);
+            try {
+                String id = idField.getText();
+                Map<String, String> names = getNames(id);
+                firstNameField.setText(names.get("first_name"));
+                lastNameField.setText(names.get("last_name"));
+                
+                tableModel.updateTable(id);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage());
+            }
         }else {
             JOptionPane.showMessageDialog(this.getParent(), "There is no connetion with the Server", "Connection Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -245,7 +232,7 @@ public class SearchPanel extends javax.swing.JPanel {
          * @param id the id number of the individual whose data will fill the
          * table
          */
-        public void updateTable(String id) {
+        public void updateTable(String id) throws IOException {
             data = SearchPanel.this.getAccountsAndBalances(id); //refresh the data of the table
             keys = data.keySet().toArray(new String[data.size()]);
             fireTableDataChanged();

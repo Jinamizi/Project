@@ -2,8 +2,14 @@ package clientserver;
 //throw illigelState if db not connected
 //add logging
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,24 +74,20 @@ public class Database {
     }
 
     /**
-     * checks if a customer exists in a database. NB. Checks only customers who
-     * have set passwords
+     * checks if a customer exists in a database. NB. Checks only customers who have set passwords
      *
      * @param id_number
      * @param password
-     * @return return true if a customer with the given id_number exist
-     * otherwise false
+     * @return return true if a customer with the given id_number exist otherwise false
+     * @throws java.sql.SQLException if an error occurred while reading the database
      */
-    public static boolean customerExist(String id_number, String password) {
+    public static boolean customerExist(String id_number, String password) throws SQLException{
         String query = "SELECT id_number FROM passwords WHERE id_number = '" + id_number + "' AND password = '" + password + "'";
 
         try (Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
             return resultSet.next(); //true if data exist
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return false;
-        }
+        } 
     }
 
     //id not needed here
@@ -133,8 +135,9 @@ public class Database {
      *
      * @param minutiae the minutiae of the print
      * @return the id_number of the fingerprint
+     * @throws java.sql.SQLException if there is an error reading the prints from the database
      */
-    public static String getMinutiaeID(String minutiae) {
+    public static String getMinutiaeID(String minutiae) throws SQLException {
         return new MinutiaeFinder(getMinutiae()).find(minutiae);
     }
 
@@ -148,7 +151,6 @@ public class Database {
      */
     public static Map<String, String> getAccountBalances(String idNumber) throws Exception {
         String query = "SELECT account_number, balance FROM accounts WHERE id_number = '" + idNumber + "'";
-        ArrayList<String> accountNumbers = new ArrayList<>(1);
         Map<String, String> accounts = new HashMap<>();
 
         try (Statement statement = connection.createStatement();
@@ -167,7 +169,7 @@ public class Database {
      * @throws SQLException throws SQLException if there is an error reading the
      * database
      */
-    private static Map<String,String> getMinutiae() {
+    private static Map<String,String> getMinutiae() throws SQLException {
         Map<String,String> minutiae = new HashMap<>();
         String query = "SELECT * FROM fingerprints"; 
         try (Statement statement = connection.createStatement();
@@ -176,10 +178,7 @@ public class Database {
             while (resultSet.next()) { //iterate the result set
                 minutiae.put(resultSet.getString(1), resultSet.getString(2)); 
             }
-        } catch (SQLException ex) {
-            //Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
-            ex.printStackTrace();
-        }
+        } 
         return minutiae;
     }
 
@@ -189,7 +188,8 @@ public class Database {
      * @param idNumber the id number of the customer
      * @param account the account number of the customer
      * @param amount the amount to withdraw
-     * @return response which can be either SUCCESS, UNSUCCESSFULL or a message if the balance is less
+     * @return response which can be either {@link Constants.ACTION_SUCCESSFUL} if withdraw was successful or {@link Constants.ACTION_UNSUCCESSFUL} if withdraw was unsuccessful
+     * or a message if the balance is less
      * @throws java.sql.SQLException if an error occurred when deducting cash
      */
     public static String withdraw(String idNumber, String account, double amount) throws SQLException {
@@ -199,7 +199,7 @@ public class Database {
         String query = "update accounts set balance = balance - '" + amount + "' where id_number = '" + idNumber + "' and account_number = '" + account + "'";
         try (Statement statement = connection.createStatement()) {
             int result = statement.executeUpdate(query);
-            return result > 0 ? "SUCCESS" : "UNSUCCESSFUL";
+            return result > 0 ? Constants.ACTION_SUCCESSFUL : Constants.ACTION_UNSUCCESSFUL;
         } 
     }
 
@@ -209,28 +209,14 @@ public class Database {
      * @param idNumber the id number of the customer
      * @param account the account number of the customer
      * @param amount the amount to deposit
-     * @return either SUCCESS, UNSUCCESSFUL or the error encountered
+     * @return either {@link Constants.ACTION_SUCCESSFUL} if deposit was successful or {@link Constants.ACTION_SUCCESSFUL} if deposit was unsuccessful 
+     * @throws java.sql.SQLException when an error is encountered
      */
-    public static String deposit(String idNumber, String account, float amount) {
-        double balance = 0.0;
-        String response = "";
-        String query = "update accounts set balance = balance - '" + amount + "' where id_number = '" + idNumber + "' and account_number = '" + account + "'";
+    public static String deposit(String idNumber, String account, float amount) throws SQLException{
+        String query = "update accounts set balance = balance + '" + amount + "' where id_number = '" + idNumber + "' and account_number = '" + account + "'";
         try (Statement statement = connection.createStatement()) {
             int result = statement.executeUpdate(query);
-            response = result > 0 ? "SUCCESS" : "UNSUCCESSFUL";
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            response = ex.getMessage();
-        }
-        return response;
+            return result > 0 ? Constants.ACTION_SUCCESSFUL : Constants.ACTION_UNSUCCESSFUL ;
+        } 
     }
-
-    public static void main(String[] s) throws Exception {
-        System.out.println(Database.getBalance("342203", "B80"));
-        System.out.println(Database.getBalance("342203", "B80"));
-        //for( String st : Database.getAccounts("33220326")) System.out.println(st);
-        //BufferedImage image = ImageIO.read(new File("C:\\tonny\\fingerprint idea\\samples\\fingerprint.png"));
-        //System.out.println(Database.getID(image));
-
-    }
-}//296
+}//241

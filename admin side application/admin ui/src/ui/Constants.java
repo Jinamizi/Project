@@ -8,6 +8,9 @@ public final class Constants {
 
     public static final String DONT_EXIST = "dont exist";
     public static final String EXIST = "exist";
+    public static final String ERROR = "error";
+    public static final String HOST = "127.0.0.1";
+    public static final int PORT = 8888;
     
     public static final String VERIFY_ADMIN_REQUEST = "verify admin";
     public static final String GENERATE_ACCOUNT_REQUEST = "generate account";
@@ -23,6 +26,14 @@ public final class Constants {
     public static final String ACTION_SUCCESSFUL = "successful";
     public static final String ACTION_UNSUCCESSFUL = "unsuccessful";
     
+    public static final String FIRST_NAME = "first_name";
+    public static final String LAST_NAME = "last_name";
+    public static final String ID_NUMBER = "id_number";
+    public static final String ACCOUNT_NUMBER = "account_number";
+    public static final String PASSWORD = "password";
+    public static final String PRINT = "print";
+    public static final String USERNAME = "username";
+
     private Constants() {
         //this prevents even the native class from calling this ctor as well :
         throw new AssertionError();

@@ -3,8 +3,14 @@ package adminserver;
 //add logging
 //change various data passed to map
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * used to connect to the database and process database requests
@@ -153,12 +159,12 @@ public class Database {
          */
         public static boolean addCustomer(Map<String,String> details) throws SQLException {
                 ArrayList<String> queries   = new ArrayList<>();
-                String firstName            = details.get("first_name");
-                String id_number            = details.get("id_number");
-                String lastName             = details.get("last_name");
-                String accountNumber        = details.get("account_number");
-                String password             = details.get("password");
-                String print                = details.get("print");
+                String firstName            = details.get(Constants.FIRST_NAME);
+                String id_number            = details.get(Constants.ID_NUMBER);
+                String lastName             = details.get(Constants.LAST_NAME);
+                String accountNumber        = details.get(Constants.ACCOUNT_NUMBER);
+                String password             = details.get(Constants.PASSWORD);
+                String print                = details.get(Constants.PRINT);
 
                 String detailsQuery = "INSERT INTO details (id_number, first_name, last_name) VALUES('" + id_number + "','" + firstName + "','" + lastName + "')";
                 queries.add(detailsQuery);
@@ -222,7 +228,7 @@ public class Database {
          * check if the provided print exists in the database
          *
          * @param minutia the minutia to look for
-         * @return "EXIST" if it exist in database else DONT EXIST
+         * @return {@link Constants.EXIST} if it exist in database else {@link Constants.DONT_EXIST} 
          * @throws java.sql.SQLException if there is an error communicating with the database
          */
         public static String minutiaeExist(String minutia) throws SQLException {
@@ -278,7 +284,6 @@ public class Database {
                 }
             } 
             return minutiaeMap;
-
         }
 
         /**
@@ -295,8 +300,8 @@ public class Database {
             try (Statement statement = connection.createStatement();
                     ResultSet resultSet = statement.executeQuery(query)) {
                 if (resultSet.next()) {
-                    names.put("first_name", resultSet.getString("first_name"));
-                    names.put("last_name", resultSet.getString("last_name"));
+                    names.put(Constants.FIRST_NAME, resultSet.getString("first_name"));
+                    names.put(Constants.FIRST_NAME, resultSet.getString("last_name"));
                 }
             }
 
@@ -313,7 +318,6 @@ public class Database {
          */
         public static Map<String, String> getAccountBalances(String idNumber) throws SQLException {
             String query = "SELECT account_number, balance FROM accounts WHERE id_number = '" + idNumber + "'";
-            ArrayList<String> accountNumbers = new ArrayList<>(1);
             Map<String, String> accounts = new HashMap<>();
 
             try (Statement statement = connection.createStatement();
@@ -326,4 +330,4 @@ public class Database {
         }
     }
 
-} //316
+} //334
